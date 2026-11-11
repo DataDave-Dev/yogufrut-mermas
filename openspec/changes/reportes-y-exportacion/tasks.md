@@ -25,4 +25,4 @@
 - [x] 3.3 Vista `/reportes/imprimir` sin menú, CSS de impresión tamaño carta, encabezado con sucursal y periodo, resumen y tabla; abre el diálogo de impresión
 - [x] 3.4 Botones "Descargar Excel" e "Imprimir / PDF" en el panel para gerente y admin
 - [x] 3.5 E2E: gerente descarga Excel y se validan hojas y totales; encargado recibe 403 en la ruta de Excel; la vista imprimible muestra resumen y registros
-- [ ] 3.6 Verificación manual: abrir el Excel descargado y guardar el PDF desde Chrome; comprobar que coinciden con el panel
+- [x] 3.6 Verificación manual: abrir el Excel descargado y guardar el PDF desde Chrome; comprobar que coinciden con el panel

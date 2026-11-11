@@ -5,6 +5,7 @@ import {
   esFechaValida,
   etiquetaPeriodo,
   fechaLocal,
+  fechasDelPeriodo,
   inicioDelDia,
   leerPeriodo,
   rangoDeFechas,
@@ -99,5 +100,14 @@ describe("variacion y saludo", () => {
     expect(saludo(Date.parse("2026-11-11T15:00:00Z"))).toBe("Buenos días"); // 09:00
     expect(saludo(Date.parse("2026-11-11T21:00:00Z"))).toBe("Buenas tardes"); // 15:00
     expect(saludo(Date.parse("2026-11-12T03:00:00Z"))).toBe("Buenas noches"); // 21:00
+  });
+});
+
+describe("fechasDelPeriodo", () => {
+  test("semana de 7 días y mes completo", () => {
+    expect(fechasDelPeriodo(crearPeriodo("semana", "2026-11-11"))).toEqual([
+      "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-14", "2026-11-15",
+    ]);
+    expect(fechasDelPeriodo(crearPeriodo("mes", "2026-02-01"))).toHaveLength(28);
   });
 });

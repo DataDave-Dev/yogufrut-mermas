@@ -28,7 +28,7 @@ export default async function MisRegistros({ searchParams }: PageProps<"/mis-reg
           </Link>
         }
       />
-      <ListaMermas mermas={filas} vacio="Aún no has registrado mermas." />
+      <ListaMermas mermas={filas} columnas mostrarSucursal vacio="Aún no has registrado mermas." />
       <Paginacion pagina={pagina} haySiguiente={haySiguiente} href={(p) => `/mis-registros?pagina=${p}`} />
     </>
   );

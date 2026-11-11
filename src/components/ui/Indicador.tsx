@@ -8,10 +8,12 @@ type Props = {
   /** Comparación contra el periodo anterior (en %). Positivo = más merma (malo). */
   variacion?: number | null;
   destacado?: boolean;
+  /** Valor de texto largo (p. ej. un nombre): tipografía más chica. */
+  compacto?: boolean;
 };
 
 /** Cifra clave (KPI). La variación se colorea como merma: subir es negativo. */
-export function Indicador({ etiqueta, valor, detalle, icono, variacion, destacado = false }: Props) {
+export function Indicador({ etiqueta, valor, detalle, icono, variacion, destacado = false, compacto = false }: Props) {
   const tono = destacado ? "bg-frambuesa-700 text-white ring-frambuesa-700" : "bg-white text-arena-900 ring-arena-200/70";
   const tenue = destacado ? "text-frambuesa-100" : "text-arena-500";
 
@@ -24,7 +26,7 @@ export function Indicador({ etiqueta, valor, detalle, icono, variacion, destacad
         <p className={`text-sm font-medium ${tenue}`}>{etiqueta}</p>
         {icono && <Icono nombre={icono} className={`size-5 ${tenue}`} />}
       </div>
-      <p className="cifra relative mt-2 text-3xl font-semibold sm:text-4xl">{valor}</p>
+      <p className={`cifra relative mt-2 font-semibold ${compacto ? "truncate text-2xl" : "text-3xl sm:text-4xl"}`}>{valor}</p>
       <div className={`relative mt-1 flex flex-wrap items-center gap-x-2 text-sm ${tenue}`}>
         {variacion != null && <Variacion valor={variacion} destacado={destacado} />}
         {detalle && <span>{detalle}</span>}

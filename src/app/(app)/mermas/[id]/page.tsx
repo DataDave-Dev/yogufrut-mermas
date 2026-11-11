@@ -31,7 +31,7 @@ export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+    <div className="flex w-full max-w-6xl flex-col gap-5">
       <Link href={volver} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-arena-600 hover:text-arena-900">
         <Icono nombre="izquierda" className="size-4" /> Volver
       </Link>
@@ -55,7 +55,7 @@ export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">
         </Aviso>
       )}
 
-      <div className={`grid gap-5 ${merma.tieneFoto ? "md:grid-cols-[1fr_minmax(0,18rem)]" : ""}`}>
+      <div className={`grid gap-5 ${merma.tieneFoto ? "md:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)]" : ""}`}>
         <Tarjeta titulo="Datos del registro">
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
             {datos.map(([etiqueta, valor]) => (

@@ -11,7 +11,8 @@ import { db } from "@/db";
 import { sucursales } from "@/db/schema";
 import { requireUsuario } from "@/lib/auth";
 import { formatoCantidad, formatoPesos, PUESTOS } from "@/lib/formato";
-import { desplazar, etiquetaPeriodo, leerPeriodo, variacion } from "@/lib/periodos";
+import { desplazar, etiquetaPeriodo, fechasDelPeriodo, leerPeriodo, variacion } from "@/lib/periodos";
+import { GraficaDias } from "@/components/GraficaDias";
 import { obtenerReporte } from "@/lib/reportes";
 import { condicionHistorial, totalesMermas } from "@/lib/consultas-mermas";
 import { rutaExcel, rutaHistorial, rutaImprimir, rutaReporte, rutaResumenGeneral } from "@/lib/rutas-reportes";
@@ -19,7 +20,6 @@ import { puedeExportar } from "@/lib/permisos";
 import { estiloBoton } from "@/components/ui/boton";
 
 const veces = (n: number) => `${n} ${n === 1 ? "registro" : "registros"}`;
-const dma = (fecha: string) => fecha.split("-").reverse().join("/");
 
 export const metadata = { title: "Reportes" };
 
@@ -82,7 +82,7 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
 
       <SelectorPeriodo periodo={periodo} href={(tipo, fecha) => rutaReporte(tipo, fecha, idEnUrl)} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Indicador
           etiqueta={`Costo de mermas · ${etiquetaPeriodo(periodo)}`}
           valor={formatoPesos(r.costoCentavos)}
@@ -91,12 +91,24 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
           destacado
         />
         <Indicador etiqueta="Total de registros" valor={String(r.registros)} icono="lista" detalle={`${anterior.registros} el ${nombreAnterior}`} />
+        <Indicador
+          etiqueta="Costo promedio por registro"
+          valor={r.registros ? formatoPesos(Math.round(r.costoCentavos / r.registros)) : "—"}
+          icono="reportes"
+        />
+        <Indicador
+          etiqueta="Producto con más merma"
+          valor={r.productos[0]?.nombre ?? "—"}
+          detalle={r.productos[0] ? formatoPesos(r.productos[0].costoCentavos) : undefined}
+          icono="producto"
+          compacto
+        />
       </div>
 
       {r.registros === 0 ? (
         <EstadoVacio titulo="No hay registros en este periodo." descripcion="Prueba con otro periodo o revisa el historial." icono="reportes" />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <Ranking
             titulo="Productos con más merma"
             vacio="—"
@@ -133,21 +145,14 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
               href: historial({ usuario: e.id }),
             }))}
           />
-          {periodo.tipo !== "dia" && (
-            <Ranking
-              titulo="Por día"
-              vacio="—"
-              filas={r.dias.map((d) => ({
-                clave: d.fecha,
-                nombre: dma(d.fecha),
-                valor: d.costoCentavos,
-                textoValor: formatoPesos(d.costoCentavos),
-                detalle: veces(d.registros),
-                href: `/sucursal?${new URLSearchParams({ ...(idEnUrl ? { sucursal: String(idEnUrl) } : {}), desde: d.fecha, hasta: d.fecha })}`,
-              }))}
-            />
-          )}
         </div>
+      )}
+      {r.registros > 0 && periodo.tipo !== "dia" && (
+        <GraficaDias
+          fechas={fechasDelPeriodo(periodo)}
+          dias={r.dias}
+          href={(fecha) => `/sucursal?${new URLSearchParams({ ...(idEnUrl ? { sucursal: String(idEnUrl) } : {}), desde: fecha, hasta: fecha })}`}
+        />
       )}
     </>
   );

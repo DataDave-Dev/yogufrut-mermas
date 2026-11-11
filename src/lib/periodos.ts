@@ -133,3 +133,10 @@ export const hoyLocal = (): string => fechaLocal(Date.now());
 /** "miércoles, 11 de noviembre" en la zona de las sucursales. */
 export const fechaLarga = (ms = Date.now()): string =>
   new Intl.DateTimeFormat("es-MX", { timeZone: ZONA, weekday: "long", day: "numeric", month: "long" }).format(ms);
+
+/** Fechas locales del periodo, en orden. */
+export function fechasDelPeriodo(periodo: Periodo): string[] {
+  const fechas: string[] = [];
+  for (let f = periodo.inicio; f < periodo.fin; f = sumarDias(f, 1)) fechas.push(f);
+  return fechas;
+}

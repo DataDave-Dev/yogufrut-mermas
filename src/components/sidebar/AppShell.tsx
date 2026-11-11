@@ -105,7 +105,7 @@ export function AppShell({ menu, usuario, colapsadoInicial, salir, children }: P
       </div>
 
       <div className={`transition-[padding] duration-300 ease-out ${colapsado ? "lg:pl-[4.75rem]" : "lg:pl-64"}`}>
-        <main id="contenido" className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-6 pb-16 sm:px-6 lg:px-10 lg:pt-10">
+        <main id="contenido" className="mx-auto flex w-full max-w-[110rem] flex-col gap-6 px-4 pt-6 pb-16 sm:px-6 lg:px-8 lg:pt-8 2xl:px-12">
           {children}
         </main>
       </div>

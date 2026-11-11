@@ -97,7 +97,7 @@ async function InicioSucursal({ usuario, hoy, mesActual }: { usuario: UsuarioSes
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Indicador
           etiqueta={`Costo de mermas · ${etiquetaPeriodo(mesActual)}`}
           valor={formatoPesos(mes.costoCentavos)}
@@ -107,6 +107,13 @@ async function InicioSucursal({ usuario, hoy, mesActual }: { usuario: UsuarioSes
         />
         <Indicador etiqueta="Registros del mes" valor={String(mes.registros)} icono="lista" detalle={`${mesAnterior.registros} el mes anterior`} />
         <Indicador etiqueta="Hoy" valor={String(deHoy.registros)} icono="historial" detalle={formatoPesos(deHoy.costoCentavos)} />
+        <Indicador
+          etiqueta="Producto con más merma"
+          valor={mes.productos[0]?.nombre ?? "—"}
+          detalle={mes.productos[0] ? formatoPesos(mes.productos[0].costoCentavos) : "Sin registros este mes"}
+          icono="producto"
+          compacto
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
@@ -158,7 +165,7 @@ async function InicioAdmin({ mesActual }: { mesActual: Periodo }) {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Indicador
           etiqueta={`Costo de mermas · ${etiquetaPeriodo(mesActual)}`}
           valor={formatoPesos(resumen.costoCentavos)}
@@ -171,6 +178,13 @@ async function InicioAdmin({ mesActual }: { mesActual: Periodo }) {
           etiqueta="Sucursales con mermas"
           valor={`${conMermas.length} de ${resumen.sucursales.length}`}
           icono="sucursal"
+        />
+        <Indicador
+          etiqueta="Sucursal con más merma"
+          valor={conMermas[0]?.nombre ?? "—"}
+          detalle={conMermas[0] ? formatoPesos(conMermas[0].costoCentavos) : "Sin registros este mes"}
+          icono="alerta"
+          compacto
         />
       </div>
       <div className="grid gap-4 lg:grid-cols-5">

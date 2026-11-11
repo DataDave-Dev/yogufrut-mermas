@@ -77,8 +77,11 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
   ]);
 
   return (
-    <>
-      <form className="grid gap-4 rounded-2xl bg-white p-5 shadow-suave ring-1 ring-arena-200/70 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid items-start gap-6 xl:grid-cols-[19rem_minmax(0,1fr)]">
+      <form
+        aria-label="Filtros"
+        className="grid gap-4 rounded-2xl bg-white p-5 shadow-suave ring-1 ring-arena-200/70 sm:grid-cols-2 lg:grid-cols-3 xl:sticky xl:top-8 xl:grid-cols-1"
+      >
         {filtros.sucursal && <input type="hidden" name="sucursal" value={filtros.sucursal} />}
         <Fecha etiqueta="Desde" nombre="desde" valor={filtros.desde} />
         <Fecha etiqueta="Hasta" nombre="hasta" valor={filtros.hasta} />
@@ -86,7 +89,7 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
         <Selector etiqueta="Producto" nombre="producto" valor={filtros.producto} opciones={opcionesProductos} />
         <Selector etiqueta="Motivo" nombre="motivo" valor={filtros.motivo} opciones={opcionesMotivos} />
         <Selector etiqueta="Registró" nombre="usuario" valor={filtros.usuario} opciones={opcionesUsuarios} />
-        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-3">
+        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-3 xl:col-span-1">
           <button className={estiloBoton()}>
             <Icono nombre="filtro" className="size-4" /> Filtrar
           </button>
@@ -96,6 +99,7 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
         </div>
       </form>
 
+      <div className="flex min-w-0 flex-col gap-4">
       {filtros.avisoFechas && <Aviso tono="alerta">{filtros.avisoFechas}</Aviso>}
 
       <p role="status" className="flex flex-wrap items-baseline gap-x-8 gap-y-1 px-1 text-arena-600">
@@ -109,13 +113,14 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
         </span>
       </p>
 
-      <ListaMermas mermas={pagina.filas} mostrarUsuario vacio="No hay registros con estos filtros." />
+      <ListaMermas mermas={pagina.filas} mostrarUsuario columnas vacio="No hay registros con estos filtros." />
       <Paginacion
         pagina={filtros.pagina}
         haySiguiente={pagina.haySiguiente}
         href={(p) => `/sucursal${aQuery({ ...filtros, pagina: p })}`}
       />
-    </>
+      </div>
+    </div>
   );
 }
 
