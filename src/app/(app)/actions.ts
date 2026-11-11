@@ -1,16 +1,16 @@
 "use server";
 
-import { and, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
 import { fotosMerma, mermas, motivos, productos } from "@/db/schema";
 import { requireUsuario, ROLES_REGISTRO } from "@/lib/auth";
-import { calcularCostoTotal } from "@/lib/costo";
+import { costoTotalCentavos, decimalAEntero } from "@/lib/costo";
 import { detectarTipoFoto, FOTO_MAX_BYTES } from "@/lib/foto";
 
-const VENTANA_DUPLICADO = "5 minutes";
+const VENTANA_DUPLICADO_MS = 5 * 60 * 1000;
 
 const esquema = z.object({
   productoId: z.coerce.number().int().positive({ message: "Selecciona un producto" }),
@@ -32,7 +32,7 @@ export type EstadoRegistro = {
   errores?: Partial<Record<CampoError, string>>;
   /** Hay un registro igual reciente: la UI pide confirmar antes de guardar. */
   duplicado?: boolean;
-  exito?: { producto: string; cantidad: string; unidad: string; costoTotal: string };
+  exito?: { producto: string; cantidadMilesimas: number; unidad: string; costoTotalCentavos: number };
 };
 
 async function leerFoto(valor: FormDataEntryValue | null): Promise<{ tipo: string; bytes: Buffer } | string | null> {
@@ -58,6 +58,7 @@ export async function registrarMerma(previo: EstadoRegistro, formData: FormData)
     return falla(errores);
   }
   const d = datos.data;
+  const cantidadMilesimas = decimalAEntero(d.cantidad, 3);
 
   const [producto] = await db
     .select()
@@ -78,16 +79,16 @@ export async function registrarMerma(previo: EstadoRegistro, formData: FormData)
         and(
           eq(mermas.usuarioId, usuario.id),
           eq(mermas.productoId, producto.id),
-          eq(mermas.cantidad, d.cantidad),
+          eq(mermas.cantidadMilesimas, cantidadMilesimas),
           isNull(mermas.canceladaEn),
-          gt(mermas.creadaEn, sql`now() - ${VENTANA_DUPLICADO}::interval`),
+          gt(mermas.creadaEn, new Date(Date.now() - VENTANA_DUPLICADO_MS)),
         ),
       )
       .limit(1);
     if (reciente) return { claveEnvio: previo.claveEnvio, duplicado: true };
   }
 
-  const costoTotal = calcularCostoTotal(producto.costoUnitario, d.cantidad);
+  const costoTotal = costoTotalCentavos(producto.costoUnitarioCentavos, cantidadMilesimas);
   await db.transaction(async (tx) => {
     // clave_envio única: un doble envío del mismo formulario no crea otro registro.
     const [nueva] = await tx
@@ -97,10 +98,10 @@ export async function registrarMerma(previo: EstadoRegistro, formData: FormData)
         usuarioId: usuario.id,
         productoId: producto.id,
         motivoId: motivo.id,
-        cantidad: d.cantidad,
+        cantidadMilesimas,
         unidad: producto.unidad,
-        costoUnitario: producto.costoUnitario,
-        costoTotal,
+        costoUnitarioCentavos: producto.costoUnitarioCentavos,
+        costoTotalCentavos: costoTotal,
         observaciones: d.observaciones || null,
         claveEnvio: d.claveEnvio,
       })
@@ -115,6 +116,11 @@ export async function registrarMerma(previo: EstadoRegistro, formData: FormData)
   revalidatePath("/sucursal");
   return {
     claveEnvio: randomUUID(),
-    exito: { producto: producto.nombre, cantidad: d.cantidad, unidad: producto.unidad, costoTotal },
+    exito: {
+      producto: producto.nombre,
+      cantidadMilesimas,
+      unidad: producto.unidad,
+      costoTotalCentavos: costoTotal,
+    },
   };
 }

@@ -56,8 +56,8 @@ export function FormularioMerma({ productos, motivos, claveEnvio }: Props) {
     <>
       {estado.exito && (
         <p role="status" className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-800">
-          Merma registrada: {formatoCantidad(estado.exito.cantidad)} {estado.exito.unidad} de {estado.exito.producto} ·{" "}
-          <strong>{formatoPesos(estado.exito.costoTotal)}</strong>
+          Merma registrada: {formatoCantidad(estado.exito.cantidadMilesimas)} {estado.exito.unidad} de {estado.exito.producto} ·{" "}
+          <strong>{formatoPesos(estado.exito.costoTotalCentavos)}</strong>
         </p>
       )}
       {mostrarAviso && (

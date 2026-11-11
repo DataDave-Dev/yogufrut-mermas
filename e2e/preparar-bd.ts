@@ -1,16 +1,16 @@
+// Base de pruebas limpia: borra el archivo SQLite, aplica migraciones y carga datos iniciales.
+// Corre antes de arrancar el servidor de pruebas (ver playwright.config.ts), para que el
+// servidor nunca quede apuntando a un archivo borrado.
 import { execSync } from "node:child_process";
-import postgres from "postgres";
+import { rmSync } from "node:fs";
 
-// Base de pruebas limpia: borra el esquema, aplica migraciones y carga datos iniciales.
-export default async function prepararBd() {
-  const url = process.env.DATABASE_URL_TEST;
-  if (!url) throw new Error("Falta DATABASE_URL_TEST en .env");
-  const sql = postgres(url, { max: 1, onnotice: () => {} });
-  await sql`drop schema if exists public cascade`;
-  await sql`drop schema if exists drizzle cascade`;
-  await sql`create schema public`;
-  await sql.end();
-  const env = { ...process.env, DATABASE_URL: url };
-  execSync("pnpm exec drizzle-kit migrate", { env, stdio: "inherit" });
-  execSync("pnpm exec tsx scripts/seed.ts --test", { env, stdio: "inherit" });
-}
+try { process.loadEnvFile(); } catch {}
+
+const url = process.env.DATABASE_URL_TEST;
+if (!url?.startsWith("file:")) throw new Error("DATABASE_URL_TEST debe ser un archivo local (file:...)");
+const archivo = url.slice("file:".length);
+for (const sufijo of ["", "-wal", "-shm"]) rmSync(archivo + sufijo, { force: true });
+
+const env = { ...process.env, DATABASE_URL: url };
+execSync("pnpm exec drizzle-kit migrate", { env, stdio: "inherit" });
+execSync("pnpm exec tsx scripts/seed.ts --test", { env, stdio: "inherit" });

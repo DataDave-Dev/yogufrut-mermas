@@ -6,9 +6,10 @@ const pesos = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN
 
 export const formatoFecha = (d: Date) => fecha.format(d);
 export const formatoHora = (d: Date) => hora.format(d);
-export const formatoPesos = (valor: string | number) => pesos.format(Number(valor));
-/** "3.500" → "3.5" */
-export const formatoCantidad = (valor: string) => String(Number(valor));
+/** Centavos → "$1,234.50" */
+export const formatoPesos = (centavos: number) => pesos.format(centavos / 100);
+/** Milésimas → "3.5" */
+export const formatoCantidad = (milesimas: number) => String(milesimas / 1000);
 
 export const PUESTOS = {
   empleado: "Empleado",

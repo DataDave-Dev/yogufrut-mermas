@@ -1,6 +1,6 @@
 import "server-only";
 import { desc, eq, sql, type SQL } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { alias } from "drizzle-orm/sqlite-core";
 import { db } from "@/db";
 import { fotosMerma, mermas, motivos, productos, sucursales, usuarios } from "@/db/schema";
 
@@ -17,16 +17,16 @@ const columnas = {
   rolUsuario: usuarios.rol,
   creadaEn: mermas.creadaEn,
   producto: productos.nombre,
-  cantidad: mermas.cantidad,
+  cantidadMilesimas: mermas.cantidadMilesimas,
   unidad: mermas.unidad,
-  costoUnitario: mermas.costoUnitario,
-  costoTotal: mermas.costoTotal,
+  costoUnitarioCentavos: mermas.costoUnitarioCentavos,
+  costoTotalCentavos: mermas.costoTotalCentavos,
   motivo: motivos.nombre,
   observaciones: mermas.observaciones,
   canceladaEn: mermas.canceladaEn,
   canceladaPor: canceladores.nombreCompleto,
   motivoCancelacion: mermas.motivoCancelacion,
-  tieneFoto: sql<boolean>`${fotosMerma.mermaId} is not null`,
+  tieneFoto: sql<boolean>`${fotosMerma.mermaId} is not null`.mapWith(Boolean),
 };
 
 function consulta() {

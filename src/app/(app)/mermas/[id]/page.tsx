@@ -16,9 +16,9 @@ export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">
     ["Sucursal", merma.sucursal],
     ["Registró", `${merma.usuario} (${PUESTOS[merma.rolUsuario]})`],
     ["Fecha", `${formatoFecha(merma.creadaEn)} ${formatoHora(merma.creadaEn)}`],
-    ["Cantidad", `${formatoCantidad(merma.cantidad)} ${merma.unidad}`],
+    ["Cantidad", `${formatoCantidad(merma.cantidadMilesimas)} ${merma.unidad}`],
     ["Motivo", merma.motivo],
-    ["Costo unitario", formatoPesos(merma.costoUnitario)],
+    ["Costo unitario", formatoPesos(merma.costoUnitarioCentavos)],
     ["Observaciones", merma.observaciones ?? "—"],
   ];
 
@@ -27,7 +27,7 @@ export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-xl font-bold">{merma.producto}</h1>
         <p className={`text-xl font-bold ${merma.canceladaEn ? "text-stone-500 line-through" : "text-rose-700"}`}>
-          {formatoPesos(merma.costoTotal)}
+          {formatoPesos(merma.costoTotalCentavos)}
         </p>
       </header>
 

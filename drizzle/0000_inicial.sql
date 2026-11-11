@@ -1,79 +1,88 @@
-CREATE TYPE "public"."rol" AS ENUM('empleado', 'encargado', 'gerente', 'admin');--> statement-breakpoint
-CREATE TYPE "public"."unidad" AS ENUM('L', 'kg', 'pz');--> statement-breakpoint
-CREATE TABLE "fotos_merma" (
-	"merma_id" integer PRIMARY KEY NOT NULL,
-	"tipo_mime" text NOT NULL,
-	"bytes" "bytea" NOT NULL
+CREATE TABLE `fotos_merma` (
+	`merma_id` integer PRIMARY KEY NOT NULL,
+	`tipo_mime` text NOT NULL,
+	`bytes` blob NOT NULL,
+	FOREIGN KEY (`merma_id`) REFERENCES `mermas`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE "mermas" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"sucursal_id" integer NOT NULL,
-	"usuario_id" integer NOT NULL,
-	"producto_id" integer NOT NULL,
-	"motivo_id" integer NOT NULL,
-	"cantidad" numeric(10, 3) NOT NULL,
-	"unidad" "unidad" NOT NULL,
-	"costo_unitario" numeric(10, 2) NOT NULL,
-	"costo_total" numeric(12, 2) NOT NULL,
-	"observaciones" text,
-	"creada_en" timestamp with time zone DEFAULT now() NOT NULL,
-	"clave_envio" uuid NOT NULL,
-	"cancelada_en" timestamp with time zone,
-	"cancelada_por" integer,
-	"motivo_cancelacion" text,
-	CONSTRAINT "mermas_clave_envio_unique" UNIQUE("clave_envio"),
-	CONSTRAINT "mermas_cantidad_positiva" CHECK ("mermas"."cantidad" > 0)
+CREATE TABLE `intentos_login` (
+	`usuario` text PRIMARY KEY NOT NULL,
+	`fallidos` integer DEFAULT 0 NOT NULL,
+	`ultimo_fallo` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "motivos" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"nombre" text NOT NULL,
-	"activo" boolean DEFAULT true NOT NULL,
-	CONSTRAINT "motivos_nombre_unique" UNIQUE("nombre")
+CREATE TABLE `mermas` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`sucursal_id` integer NOT NULL,
+	`usuario_id` integer NOT NULL,
+	`producto_id` integer NOT NULL,
+	`motivo_id` integer NOT NULL,
+	`cantidad_milesimas` integer NOT NULL,
+	`unidad` text NOT NULL,
+	`costo_unitario_centavos` integer NOT NULL,
+	`costo_total_centavos` integer NOT NULL,
+	`observaciones` text,
+	`creada_en` integer NOT NULL,
+	`clave_envio` text NOT NULL,
+	`cancelada_en` integer,
+	`cancelada_por` integer,
+	`motivo_cancelacion` text,
+	FOREIGN KEY (`sucursal_id`) REFERENCES `sucursales`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`motivo_id`) REFERENCES `motivos`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`cancelada_por`) REFERENCES `usuarios`(`id`) ON UPDATE no action ON DELETE no action,
+	CONSTRAINT "mermas_cantidad_positiva" CHECK("mermas"."cantidad_milesimas" > 0)
 );
 --> statement-breakpoint
-CREATE TABLE "productos" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"categoria" text NOT NULL,
-	"nombre" text NOT NULL,
-	"unidad" "unidad" NOT NULL,
-	"costo_unitario" numeric(10, 2) NOT NULL,
-	"activo" boolean DEFAULT true NOT NULL,
-	CONSTRAINT "productos_nombre_unique" UNIQUE("nombre")
+CREATE UNIQUE INDEX `mermas_clave_envio_unique` ON `mermas` (`clave_envio`);--> statement-breakpoint
+CREATE INDEX `mermas_usuario_fecha` ON `mermas` (`usuario_id`,`creada_en`);--> statement-breakpoint
+CREATE INDEX `mermas_sucursal_fecha` ON `mermas` (`sucursal_id`,`creada_en`);--> statement-breakpoint
+CREATE TABLE `motivos` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`nombre` text NOT NULL,
+	`activo` integer DEFAULT true NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "sesiones" (
-	"token_hash" text PRIMARY KEY NOT NULL,
-	"usuario_id" integer NOT NULL,
-	"creada_en" timestamp with time zone DEFAULT now() NOT NULL,
-	"ultimo_acceso" timestamp with time zone DEFAULT now() NOT NULL
+CREATE UNIQUE INDEX `motivos_nombre_unique` ON `motivos` (`nombre`);--> statement-breakpoint
+CREATE TABLE `productos` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`categoria` text NOT NULL,
+	`nombre` text NOT NULL,
+	`unidad` text NOT NULL,
+	`costo_unitario_centavos` integer NOT NULL,
+	`activo` integer DEFAULT true NOT NULL,
+	CONSTRAINT "productos_unidad_valida" CHECK("productos"."unidad" in ('L', 'kg', 'pz')),
+	CONSTRAINT "productos_costo_no_negativo" CHECK("productos"."costo_unitario_centavos" >= 0)
 );
 --> statement-breakpoint
-CREATE TABLE "sucursales" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"nombre" text NOT NULL,
-	"activa" boolean DEFAULT true NOT NULL
+CREATE UNIQUE INDEX `productos_nombre_unique` ON `productos` (`nombre`);--> statement-breakpoint
+CREATE TABLE `sesiones` (
+	`token_hash` text PRIMARY KEY NOT NULL,
+	`usuario_id` integer NOT NULL,
+	`creada_en` integer NOT NULL,
+	`ultimo_acceso` integer NOT NULL,
+	FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE "usuarios" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"usuario" text NOT NULL,
-	"nombre_completo" text NOT NULL,
-	"rol" "rol" NOT NULL,
-	"sucursal_id" integer,
-	"password_hash" text NOT NULL,
-	"activo" boolean DEFAULT true NOT NULL,
-	CONSTRAINT "usuarios_usuario_unique" UNIQUE("usuario"),
-	CONSTRAINT "usuarios_sucursal_por_rol" CHECK (("usuarios"."rol" = 'admin' AND "usuarios"."sucursal_id" IS NULL) OR ("usuarios"."rol" <> 'admin' AND "usuarios"."sucursal_id" IS NOT NULL))
+CREATE TABLE `sucursales` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`nombre` text NOT NULL,
+	`activa` integer DEFAULT true NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "fotos_merma" ADD CONSTRAINT "fotos_merma_merma_id_mermas_id_fk" FOREIGN KEY ("merma_id") REFERENCES "public"."mermas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mermas" ADD CONSTRAINT "mermas_sucursal_id_sucursales_id_fk" FOREIGN KEY ("sucursal_id") REFERENCES "public"."sucursales"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mermas" ADD CONSTRAINT "mermas_usuario_id_usuarios_id_fk" FOREIGN KEY ("usuario_id") REFERENCES "public"."usuarios"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mermas" ADD CONSTRAINT "mermas_producto_id_productos_id_fk" FOREIGN KEY ("producto_id") REFERENCES "public"."productos"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mermas" ADD CONSTRAINT "mermas_motivo_id_motivos_id_fk" FOREIGN KEY ("motivo_id") REFERENCES "public"."motivos"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mermas" ADD CONSTRAINT "mermas_cancelada_por_usuarios_id_fk" FOREIGN KEY ("cancelada_por") REFERENCES "public"."usuarios"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sesiones" ADD CONSTRAINT "sesiones_usuario_id_usuarios_id_fk" FOREIGN KEY ("usuario_id") REFERENCES "public"."usuarios"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "usuarios" ADD CONSTRAINT "usuarios_sucursal_id_sucursales_id_fk" FOREIGN KEY ("sucursal_id") REFERENCES "public"."sucursales"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "sucursales_nombre_unico" ON "sucursales" USING btree (lower("nombre"));
+CREATE UNIQUE INDEX `sucursales_nombre_unico` ON `sucursales` (lower("nombre"));--> statement-breakpoint
+CREATE TABLE `usuarios` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`usuario` text NOT NULL,
+	`nombre_completo` text NOT NULL,
+	`rol` text NOT NULL,
+	`sucursal_id` integer,
+	`password_hash` text NOT NULL,
+	`activo` integer DEFAULT true NOT NULL,
+	FOREIGN KEY (`sucursal_id`) REFERENCES `sucursales`(`id`) ON UPDATE no action ON DELETE no action,
+	CONSTRAINT "usuarios_rol_valido" CHECK("usuarios"."rol" in ('empleado', 'encargado', 'gerente', 'admin')),
+	CONSTRAINT "usuarios_sucursal_por_rol" CHECK(("usuarios"."rol" = 'admin' AND "usuarios"."sucursal_id" IS NULL) OR ("usuarios"."rol" <> 'admin' AND "usuarios"."sucursal_id" IS NOT NULL))
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `usuarios_usuario_unique` ON `usuarios` (`usuario`);

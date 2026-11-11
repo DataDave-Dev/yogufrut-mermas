@@ -5,15 +5,15 @@ Registro y control de mermas de las sucursales Yogufrut. Requerimientos en `docs
 ## Requisitos
 
 - Node 20.12+ y pnpm
-- PostgreSQL 16+ (local, o `docker compose up -d`)
+- Nada más: la base es un archivo SQLite en `data/` (se crea solo)
 
 ## Arranque
 
 ```bash
 pnpm install
-cp .env.example .env          # ajusta DATABASE_URL
+cp .env.example .env
 pnpm db:migrate               # crea las tablas
-pnpm db:seed                  # catálogos, Sucursal Sendero y usuarios de prueba (idempotente)
+pnpm db:seed                  # catálogos, Sucursal Sendero, usuarios de prueba y modo WAL (idempotente)
 pnpm dev                      # http://localhost:3001
 ```
 
@@ -23,9 +23,15 @@ Usuarios de prueba (contraseña = `SEED_PASSWORD` del `.env`): `empleado`, `enca
 
 ```bash
 pnpm test                     # unitarias (Vitest)
-pnpm test:e2e                 # E2E (Playwright); recrea la base DATABASE_URL_TEST
+pnpm test:e2e                 # E2E (Playwright); recrea el archivo DATABASE_URL_TEST
 ```
 
 ## Cambios al esquema
 
 Edita `src/db/schema.ts`, luego `pnpm db:generate --name <descripcion>` y `pnpm db:migrate`.
+
+## Producción
+
+SQLite necesita disco persistente (VPS, Railway, Fly.io con volumen, etc.). En plataformas sin disco persistente
+(p. ej. Vercel) usa Turso: `DATABASE_URL=libsql://<base>.turso.io` y `DATABASE_AUTH_TOKEN`, sin cambiar código.
+Respalda el archivo `data/mermas.db` (o usa los respaldos de Turso).

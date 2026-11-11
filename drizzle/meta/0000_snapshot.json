@@ -1,30 +1,32 @@
 {
-  "id": "8f659991-20be-47e4-9e02-a3251f07ae11",
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "8c7a1008-9b8f-4419-85c7-b374e427c00a",
   "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "7",
-  "dialect": "postgresql",
   "tables": {
-    "public.fotos_merma": {
+    "fotos_merma": {
       "name": "fotos_merma",
-      "schema": "",
       "columns": {
         "merma_id": {
           "name": "merma_id",
           "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "tipo_mime": {
           "name": "tipo_mime",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "bytes": {
           "name": "bytes",
-          "type": "bytea",
+          "type": "blob",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -45,108 +47,174 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "checkConstraints": {}
     },
-    "public.mermas": {
+    "intentos_login": {
+      "name": "intentos_login",
+      "columns": {
+        "usuario": {
+          "name": "usuario",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fallidos": {
+          "name": "fallidos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "ultimo_fallo": {
+          "name": "ultimo_fallo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "mermas": {
       "name": "mermas",
-      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "sucursal_id": {
           "name": "sucursal_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "usuario_id": {
           "name": "usuario_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "producto_id": {
           "name": "producto_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "motivo_id": {
           "name": "motivo_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "cantidad": {
-          "name": "cantidad",
-          "type": "numeric(10, 3)",
+        "cantidad_milesimas": {
+          "name": "cantidad_milesimas",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "unidad": {
           "name": "unidad",
-          "type": "unidad",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "costo_unitario": {
-          "name": "costo_unitario",
-          "type": "numeric(10, 2)",
+        "costo_unitario_centavos": {
+          "name": "costo_unitario_centavos",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "costo_total": {
-          "name": "costo_total",
-          "type": "numeric(12, 2)",
+        "costo_total_centavos": {
+          "name": "costo_total_centavos",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "observaciones": {
           "name": "observaciones",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "creada_en": {
           "name": "creada_en",
-          "type": "timestamp with time zone",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "autoincrement": false
         },
         "clave_envio": {
           "name": "clave_envio",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "cancelada_en": {
           "name": "cancelada_en",
-          "type": "timestamp with time zone",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "cancelada_por": {
           "name": "cancelada_por",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "motivo_cancelacion": {
           "name": "motivo_cancelacion",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "mermas_clave_envio_unique": {
+          "name": "mermas_clave_envio_unique",
+          "columns": [
+            "clave_envio"
+          ],
+          "isUnique": true
+        },
+        "mermas_usuario_fecha": {
+          "name": "mermas_usuario_fecha",
+          "columns": [
+            "usuario_id",
+            "creada_en"
+          ],
+          "isUnique": false
+        },
+        "mermas_sucursal_fecha": {
+          "name": "mermas_sucursal_fecha",
+          "columns": [
+            "sucursal_id",
+            "creada_en"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "mermas_sucursal_id_sucursales_id_fk": {
           "name": "mermas_sucursal_id_sucursales_id_fk",
@@ -215,152 +283,154 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "mermas_clave_envio_unique": {
-          "name": "mermas_clave_envio_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "clave_envio"
-          ]
-        }
-      },
-      "policies": {},
+      "uniqueConstraints": {},
       "checkConstraints": {
         "mermas_cantidad_positiva": {
           "name": "mermas_cantidad_positiva",
-          "value": "\"mermas\".\"cantidad\" > 0"
+          "value": "\"mermas\".\"cantidad_milesimas\" > 0"
         }
-      },
-      "isRLSEnabled": false
+      }
     },
-    "public.motivos": {
+    "motivos": {
       "name": "motivos",
-      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "nombre": {
           "name": "nombre",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "activo": {
           "name": "activo",
-          "type": "boolean",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false,
           "default": true
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
+      "indexes": {
         "motivos_nombre_unique": {
           "name": "motivos_nombre_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "nombre"
-          ]
+          ],
+          "isUnique": true
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
-    "public.productos": {
+    "productos": {
       "name": "productos",
-      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "categoria": {
           "name": "categoria",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "nombre": {
           "name": "nombre",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "unidad": {
           "name": "unidad",
-          "type": "unidad",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "costo_unitario": {
-          "name": "costo_unitario",
-          "type": "numeric(10, 2)",
+        "costo_unitario_centavos": {
+          "name": "costo_unitario_centavos",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "activo": {
           "name": "activo",
-          "type": "boolean",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false,
           "default": true
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
+      "indexes": {
         "productos_nombre_unique": {
           "name": "productos_nombre_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "nombre"
-          ]
+          ],
+          "isUnique": true
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "productos_unidad_valida": {
+          "name": "productos_unidad_valida",
+          "value": "\"productos\".\"unidad\" in ('L', 'kg', 'pz')"
+        },
+        "productos_costo_no_negativo": {
+          "name": "productos_costo_no_negativo",
+          "value": "\"productos\".\"costo_unitario_centavos\" >= 0"
+        }
+      }
     },
-    "public.sesiones": {
+    "sesiones": {
       "name": "sesiones",
-      "schema": "",
       "columns": {
         "token_hash": {
           "name": "token_hash",
           "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "usuario_id": {
           "name": "usuario_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "creada_en": {
           "name": "creada_en",
-          "type": "timestamp with time zone",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "autoincrement": false
         },
         "ultimo_acceso": {
           "name": "ultimo_acceso",
-          "type": "timestamp with time zone",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -381,31 +451,31 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "checkConstraints": {}
     },
-    "public.sucursales": {
+    "sucursales": {
       "name": "sucursales",
-      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "nombre": {
           "name": "nombre",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "activa": {
           "name": "activa",
-          "type": "boolean",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false,
           "default": true
         }
       },
@@ -413,76 +483,79 @@
         "sucursales_nombre_unico": {
           "name": "sucursales_nombre_unico",
           "columns": [
-            {
-              "expression": "lower(\"nombre\")",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
+            "lower(\"nombre\")"
           ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
+          "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "checkConstraints": {}
     },
-    "public.usuarios": {
+    "usuarios": {
       "name": "usuarios",
-      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "usuario": {
           "name": "usuario",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "nombre_completo": {
           "name": "nombre_completo",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "rol": {
           "name": "rol",
-          "type": "rol",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "sucursal_id": {
           "name": "sucursal_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "password_hash": {
           "name": "password_hash",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "activo": {
           "name": "activo",
-          "type": "boolean",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false,
           "default": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "usuarios_usuario_unique": {
+          "name": "usuarios_usuario_unique",
+          "columns": [
+            "usuario"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "usuarios_sucursal_id_sucursales_id_fk": {
           "name": "usuarios_sucursal_id_sucursales_id_fk",
@@ -499,54 +572,35 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "usuarios_usuario_unique": {
-          "name": "usuarios_usuario_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "usuario"
-          ]
-        }
-      },
-      "policies": {},
+      "uniqueConstraints": {},
       "checkConstraints": {
+        "usuarios_rol_valido": {
+          "name": "usuarios_rol_valido",
+          "value": "\"usuarios\".\"rol\" in ('empleado', 'encargado', 'gerente', 'admin')"
+        },
         "usuarios_sucursal_por_rol": {
           "name": "usuarios_sucursal_por_rol",
           "value": "(\"usuarios\".\"rol\" = 'admin' AND \"usuarios\".\"sucursal_id\" IS NULL) OR (\"usuarios\".\"rol\" <> 'admin' AND \"usuarios\".\"sucursal_id\" IS NOT NULL)"
         }
-      },
-      "isRLSEnabled": false
+      }
     }
   },
-  "enums": {
-    "public.rol": {
-      "name": "rol",
-      "schema": "public",
-      "values": [
-        "empleado",
-        "encargado",
-        "gerente",
-        "admin"
-      ]
-    },
-    "public.unidad": {
-      "name": "unidad",
-      "schema": "public",
-      "values": [
-        "L",
-        "kg",
-        "pz"
-      ]
-    }
-  },
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
   "views": {},
+  "enums": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {
+      "sucursales_nombre_unico": {
+        "columns": {
+          "lower(\"nombre\")": {
+            "isExpression": true
+          }
+        }
+      }
+    }
   }
 }

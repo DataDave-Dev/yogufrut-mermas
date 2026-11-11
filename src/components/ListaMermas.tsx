@@ -19,10 +19,10 @@ export function ListaMermas({ mermas, mostrarUsuario = false, vacio }: Props) {
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="font-semibold">
-                {m.producto} · {formatoCantidad(m.cantidad)} {m.unidad}
+                {m.producto} · {formatoCantidad(m.cantidadMilesimas)} {m.unidad}
               </p>
               <p className={`font-semibold ${m.canceladaEn ? "text-stone-500 line-through" : "text-rose-700"}`}>
-                {formatoPesos(m.costoTotal)}
+                {formatoPesos(m.costoTotalCentavos)}
               </p>
             </div>
             <p className="text-sm text-stone-600">

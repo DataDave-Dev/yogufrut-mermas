@@ -56,7 +56,7 @@ export async function iniciarSesion(_previo: EstadoLogin, formData: FormData): P
       .values({ usuario: nombre, fallidos: 1 })
       .onConflictDoUpdate({
         target: intentosLogin.usuario,
-        set: { fallidos: sql`${intentosLogin.fallidos} + 1`, ultimoFallo: sql`now()` },
+        set: { fallidos: sql`${intentosLogin.fallidos} + 1`, ultimoFallo: new Date() },
       });
     return { error: ERROR, usuario: usuarioEscrito };
   }

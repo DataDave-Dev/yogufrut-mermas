@@ -3,8 +3,9 @@ import { Editar } from "@/components/Editar";
 import { Estado } from "@/components/Estado";
 import { FormularioAccion } from "@/components/FormularioAccion";
 import { db } from "@/db";
-import { productos, unidadEnum } from "@/db/schema";
+import { productos, UNIDADES } from "@/db/schema";
 import { requireUsuario } from "@/lib/auth";
+import { enteroADecimal } from "@/lib/costo";
 import { formatoPesos } from "@/lib/formato";
 import { cambiarEstadoProducto, crearProducto, editarProducto } from "./actions";
 
@@ -36,7 +37,7 @@ export default async function Productos() {
                   <p className="font-semibold">{p.nombre}</p>
                   <Estado activo={p.activo} />
                   <p className="ml-auto text-sm text-stone-600">
-                    {formatoPesos(p.costoUnitario)} / {p.unidad}
+                    {formatoPesos(p.costoUnitarioCentavos)} / {p.unidad}
                   </p>
                 </div>
                 <Editar resumen={`Editar ${p.nombre}`}>
@@ -83,7 +84,7 @@ function CamposProducto({ categorias, producto }: { categorias: string[]; produc
         Unidad
         <select name="unidad" required defaultValue={producto?.unidad ?? ""} className="campo">
           {!producto && <option value="">Selecciona…</option>}
-          {unidadEnum.enumValues.map((u) => (
+          {UNIDADES.map((u) => (
             <option key={u} value={u}>
               {u}
             </option>
@@ -96,7 +97,7 @@ function CamposProducto({ categorias, producto }: { categorias: string[]; produc
           name="costoUnitario"
           required
           inputMode="decimal"
-          defaultValue={producto?.costoUnitario}
+          defaultValue={producto && enteroADecimal(producto.costoUnitarioCentavos, 2)}
           className="campo"
           placeholder="0.00"
         />

@@ -1,10 +1,11 @@
 // Carga inicial idempotente: catálogos desde docs/*.csv, sucursal de prueba y un usuario por rol.
 import { readFileSync } from "node:fs";
 import { hash } from "@node-rs/argon2";
+import { createClient } from "@libsql/client";
 import { eq, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/libsql";
 import * as s from "../src/db/schema";
+import { decimalAEntero } from "../src/lib/costo";
 
 try { process.loadEnvFile(); } catch {}
 
@@ -19,15 +20,18 @@ function leerCsv(ruta: string): Record<string, string>[] {
   return filas.map((f) => Object.fromEntries(f.split(",").map((v, i) => [columnas[i], v.trim()])));
 }
 
-const cliente = postgres(url, { max: 1 });
+const cliente = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN });
 const db = drizzle(cliente, { schema: s });
 
 async function main() {
+  // WAL permite leer mientras se escribe; queda guardado en el archivo (no aplica en Turso).
+  if (url!.startsWith("file:")) await cliente.execute("PRAGMA journal_mode = WAL");
+
   const productos = leerCsv("docs/catalogo-productos.csv").map((p) => ({
     categoria: p.categoria,
     nombre: p.producto,
-    unidad: p.unidad as "L" | "kg" | "pz",
-    costoUnitario: p.costo_unitario_mxn,
+    unidad: p.unidad as (typeof s.UNIDADES)[number],
+    costoUnitarioCentavos: decimalAEntero(p.costo_unitario_mxn, 2),
   }));
   await db.insert(s.productos).values(productos).onConflictDoNothing();
 
@@ -49,10 +53,10 @@ async function main() {
   ];
   await db.insert(s.usuarios).values(usuarios.map((u) => ({ ...u, passwordHash }))).onConflictDoNothing();
 
-  const conteo = await db.execute(sql`
+  const conteo = await db.get(sql`
     select (select count(*) from productos) productos, (select count(*) from motivos) motivos,
            (select count(*) from sucursales) sucursales, (select count(*) from usuarios) usuarios`);
-  console.log("Carga inicial lista:", conteo[0]);
+  console.log("Carga inicial lista:", conteo);
 }
 
 main()
@@ -60,4 +64,4 @@ main()
     console.error(e);
     process.exitCode = 1;
   })
-  .finally(() => cliente.end());
+  .finally(() => cliente.close());

@@ -6,7 +6,6 @@ const PUERTO = 3101;
 
 export default defineConfig({
   testDir: "e2e",
-  globalSetup: "./e2e/preparar-bd.ts",
   workers: 1,
   use: { baseURL: `http://localhost:${PUERTO}`, locale: "es-MX", timezoneId: "America/Monterrey" },
   projects: [
@@ -14,7 +13,7 @@ export default defineConfig({
     { name: "celular", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: `next dev -p ${PUERTO}`,
+    command: `tsx e2e/preparar-bd.ts && next dev -p ${PUERTO}`,
     url: `http://localhost:${PUERTO}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
