@@ -49,13 +49,13 @@ export async function obtenerMerma(id: number) {
 }
 
 /** Página de registros (más recientes primero) más un indicador de si hay página siguiente. */
-export async function listarMermas(filtro: SQL, pagina = 1) {
+export async function listarMermas(filtro: SQL, pagina = 1, porPagina = POR_PAGINA) {
   const filas = await consulta()
     .where(filtro)
     .orderBy(desc(mermas.creadaEn), desc(mermas.id))
-    .limit(POR_PAGINA + 1)
-    .offset((pagina - 1) * POR_PAGINA);
-  return { filas: filas.slice(0, POR_PAGINA), haySiguiente: filas.length > POR_PAGINA };
+    .limit(porPagina + 1)
+    .offset((pagina - 1) * porPagina);
+  return { filas: filas.slice(0, porPagina), haySiguiente: filas.length > porPagina };
 }
 
 export type FiltroHistorial = {

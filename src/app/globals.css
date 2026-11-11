@@ -82,3 +82,16 @@ p {
     @apply font-display tracking-tight tabular-nums;
   }
 }
+
+/* Impresión (vista /reportes/imprimir): hoja carta, sin fondo decorativo. */
+@page {
+  size: letter;
+  margin: 14mm 12mm;
+}
+
+@media print {
+  body {
+    background: white;
+    background-image: none;
+  }
+}

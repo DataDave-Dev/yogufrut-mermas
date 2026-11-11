@@ -20,9 +20,9 @@
 
 ## 3. Fase 3 — Exportación: Excel y PDF del periodo
 
-- [ ] 3.1 Agregar `exceljs`; `obtenerRegistrosDelPeriodo` con límite de 10 000 filas
-- [ ] 3.2 Ruta `/reportes/excel` (gerente su sucursal, admin cualquiera) con hojas "Resumen" y "Registros" y nombre `mermas-<sucursal>-<periodo>.xlsx`
-- [ ] 3.3 Vista `/reportes/imprimir` sin menú, CSS de impresión tamaño carta, encabezado con sucursal y periodo, resumen y tabla; abre el diálogo de impresión
-- [ ] 3.4 Botones "Descargar Excel" e "Imprimir / PDF" en el panel para gerente y admin
-- [ ] 3.5 E2E: gerente descarga Excel y se validan hojas y totales; encargado recibe 403 en la ruta de Excel; la vista imprimible muestra resumen y registros
+- [x] 3.1 Agregar `exceljs`; `obtenerRegistrosDelPeriodo` con límite de 10 000 filas
+- [x] 3.2 Ruta `/reportes/excel` (gerente su sucursal, admin cualquiera) con hojas "Resumen" y "Registros" y nombre `mermas-<sucursal>-<periodo>.xlsx`
+- [x] 3.3 Vista `/reportes/imprimir` sin menú, CSS de impresión tamaño carta, encabezado con sucursal y periodo, resumen y tabla; abre el diálogo de impresión
+- [x] 3.4 Botones "Descargar Excel" e "Imprimir / PDF" en el panel para gerente y admin
+- [x] 3.5 E2E: gerente descarga Excel y se validan hojas y totales; encargado recibe 403 en la ruta de Excel; la vista imprimible muestra resumen y registros
 - [ ] 3.6 Verificación manual: abrir el Excel descargado y guardar el PDF desde Chrome; comprobar que coinciden con el panel

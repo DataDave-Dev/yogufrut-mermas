@@ -14,7 +14,9 @@ import { formatoCantidad, formatoPesos, PUESTOS } from "@/lib/formato";
 import { desplazar, etiquetaPeriodo, leerPeriodo, variacion } from "@/lib/periodos";
 import { obtenerReporte } from "@/lib/reportes";
 import { condicionHistorial, totalesMermas } from "@/lib/consultas-mermas";
-import { rutaHistorial, rutaReporte, rutaResumenGeneral } from "@/lib/rutas-reportes";
+import { rutaExcel, rutaHistorial, rutaImprimir, rutaReporte, rutaResumenGeneral } from "@/lib/rutas-reportes";
+import { puedeExportar } from "@/lib/permisos";
+import { estiloBoton } from "@/components/ui/boton";
 
 const veces = (n: number) => `${n} ${n === 1 ? "registro" : "registros"}`;
 const dma = (fecha: string) => fecha.split("-").reverse().join("/");
@@ -55,7 +57,28 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
           <Icono nombre="izquierda" className="size-4" /> Resumen general
         </Link>
       )}
-      <EncabezadoPagina antetitulo="Panel de reportes" titulo={sucursal.nombre} />
+      <EncabezadoPagina
+        antetitulo="Panel de reportes"
+        titulo={sucursal.nombre}
+        acciones={
+          puedeExportar(usuario.rol) && (
+            <>
+              {/* <a> y no <Link>: es una descarga, no una navegación. */}
+              <a href={rutaExcel(periodo.tipo, periodo.inicio, idEnUrl)} download className={estiloBoton({ variante: "secundario" })}>
+                <Icono nombre="descarga" className="size-4" /> Descargar Excel
+              </a>
+              <Link
+                href={rutaImprimir(periodo.tipo, periodo.inicio, idEnUrl)}
+                target="_blank"
+                rel="noopener"
+                className={estiloBoton({ variante: "secundario" })}
+              >
+                <Icono nombre="imprimir" className="size-4" /> Imprimir / PDF
+              </Link>
+            </>
+          )
+        }
+      />
 
       <SelectorPeriodo periodo={periodo} href={(tipo, fecha) => rutaReporte(tipo, fecha, idEnUrl)} />
 

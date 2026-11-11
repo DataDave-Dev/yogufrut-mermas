@@ -2,6 +2,8 @@ import "server-only";
 import { and, asc, count, desc, eq, gte, isNull, lt, sql, sum, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { mermas, motivos, productos, sucursales, usuarios } from "@/db/schema";
+import { condicionHistorial, listarMermas } from "./consultas-mermas";
+import type { DatosExportacion } from "./exportacion";
 import { desfaseMs, type Periodo } from "./periodos";
 
 const LIMITE_RANKING = 10;
@@ -20,7 +22,7 @@ function condicionPeriodo(periodo: Periodo, sucursalId?: number): SQL {
 }
 
 /** Datos del panel de una sucursal: totales, rankings y desglose por día. Excluye cancelados. */
-export async function obtenerReporte(sucursalId: number, periodo: Periodo) {
+export async function obtenerReporte(sucursalId: number, periodo: Periodo, limite = LIMITE_RANKING) {
   const donde = condicionPeriodo(periodo, sucursalId);
   // ponytail: desfase fijo del inicio del periodo; un cambio de horario a mitad del periodo movería
   // una hora el día del cambio (Monterrey no tiene horario de verano desde 2022).
@@ -43,7 +45,7 @@ export async function obtenerReporte(sucursalId: number, periodo: Periodo) {
       .where(donde)
       .groupBy(productos.id, mermas.unidad)
       .orderBy(desc(costo), asc(productos.nombre))
-      .limit(LIMITE_RANKING),
+      .limit(limite),
     db
       .select({ id: motivos.id, nombre: motivos.nombre, registros, costoCentavos: costo })
       .from(mermas)
@@ -51,7 +53,7 @@ export async function obtenerReporte(sucursalId: number, periodo: Periodo) {
       .where(donde)
       .groupBy(motivos.id)
       .orderBy(desc(registros), desc(costo))
-      .limit(LIMITE_RANKING),
+      .limit(limite),
     db
       .select({ id: usuarios.id, nombre: usuarios.nombreCompleto, rol: usuarios.rol, registros, costoCentavos: costo })
       .from(mermas)
@@ -94,5 +96,35 @@ export async function obtenerResumenGeneral(periodo: Periodo) {
     sucursales: filas,
     registros: filas.reduce((t, f) => t + f.registros, 0),
     costoCentavos: filas.reduce((t, f) => t + f.costoCentavos, 0),
+  };
+}
+
+/** Máximo de filas de detalle en una exportación. */
+export const LIMITE_EXPORTACION = 10_000;
+
+/** Registros no cancelados del periodo para exportar, más recientes primero. */
+export async function obtenerRegistrosDelPeriodo(sucursalId: number, periodo: Periodo) {
+  const { filas, haySiguiente } = await listarMermas(
+    condicionHistorial({ sucursalId, desde: periodo.desde, hasta: periodo.hasta, estado: "activos" }),
+    1,
+    LIMITE_EXPORTACION,
+  );
+  return { registros: filas, truncado: haySiguiente };
+}
+
+/** Reporte completo para exportar: todos los productos, motivos y empleados, y el detalle. */
+export async function obtenerExportacion(sucursalId: number, periodo: Periodo): Promise<DatosExportacion> {
+  const [reporte, detalle] = await Promise.all([
+    obtenerReporte(sucursalId, periodo, LIMITE_EXPORTACION),
+    obtenerRegistrosDelPeriodo(sucursalId, periodo),
+  ]);
+  return {
+    registros: detalle.registros,
+    truncado: detalle.truncado,
+    registrosTotales: reporte.registros,
+    costoCentavos: reporte.costoCentavos,
+    productos: reporte.productos,
+    motivos: reporte.motivos,
+    empleados: reporte.empleados,
   };
 }
