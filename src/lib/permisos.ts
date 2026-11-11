@@ -13,3 +13,20 @@ export function puedeCancelarMerma(usuario: Usuario, merma: Merma): boolean {
   if (usuario.rol === "admin") return true;
   return usuario.rol === "gerente" && usuario.sucursalId === merma.sucursalId;
 }
+
+/** Roles que el usuario puede asignar al crear o editar usuarios. */
+export function rolesAsignables(usuario: Pick<Usuario, "rol">): readonly Rol[] {
+  if (usuario.rol === "admin") return ["empleado", "encargado", "gerente", "admin"];
+  if (usuario.rol === "gerente") return ["empleado", "encargado"];
+  return [];
+}
+
+/** Administrar (editar, desactivar, cambiar contraseña) a otro usuario. */
+export function puedeGestionarUsuario(actor: Usuario, objetivo: Pick<Usuario, "rol" | "sucursalId">): boolean {
+  if (actor.rol === "admin") return true;
+  return (
+    actor.rol === "gerente" &&
+    actor.sucursalId === objetivo.sucursalId &&
+    rolesAsignables(actor).includes(objetivo.rol)
+  );
+}

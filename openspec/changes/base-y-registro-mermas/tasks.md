@@ -25,11 +25,11 @@
 
 ## 3. Fase 3 — Administración: sucursales, usuarios y catálogos
 
-- [ ] 3.1 Gestión de sucursales (administrador): listar, crear, renombrar, desactivar/reactivar; nombre único sin distinguir mayúsculas
-- [ ] 3.2 Al iniciar sesión y en cada petición, rechazar usuarios inactivos o de sucursales desactivadas
-- [ ] 3.3 Gestión de usuarios: administrador (todos los roles y sucursales) y gerente (empleados y encargados de su sucursal); crear, editar, desactivar; nadie puede desactivarse a sí mismo
-- [ ] 3.4 Restablecer contraseña (administrador y gerente) invalidando las sesiones del usuario
-- [ ] 3.5 Catálogo de productos (administrador): crear, editar categoría/unidad/costo, desactivar; los productos inactivos no aparecen al registrar
-- [ ] 3.6 Catálogo de motivos (administrador): crear, renombrar, desactivar
-- [ ] 3.7 Pruebas unitarias de la matriz de permisos de gestión; E2E: administrador crea sucursal y gerente → gerente crea empleado → empleado entra y registra
-- [ ] 3.8 Verificación manual: administrador crea "Sucursal Cumbres" y su gerente; el gerente crea un empleado y le restablece la contraseña; el empleado registra una merma; el administrador cambia el costo de un producto y la merma anterior conserva su costo; al desactivar la sucursal su personal ya no puede entrar
+- [x] 3.1 Gestión de sucursales (administrador): listar, crear, renombrar, desactivar/reactivar; nombre único sin distinguir mayúsculas
+- [x] 3.2 Al iniciar sesión y en cada petición, rechazar usuarios inactivos o de sucursales desactivadas
+- [x] 3.3 Gestión de usuarios: administrador (todos los roles y sucursales) y gerente (empleados y encargados de su sucursal); crear, editar, desactivar; nadie puede desactivarse a sí mismo
+- [x] 3.4 Restablecer contraseña (administrador y gerente) invalidando las sesiones del usuario
+- [x] 3.5 Catálogo de productos (administrador): crear, editar categoría/unidad/costo, desactivar; los productos inactivos no aparecen al registrar
+- [x] 3.6 Catálogo de motivos (administrador): crear, renombrar, desactivar
+- [x] 3.7 Pruebas unitarias de la matriz de permisos de gestión; E2E: administrador crea sucursal y gerente → gerente crea empleado → empleado entra y registra
+- [x] 3.8 Verificación manual: administrador crea "Sucursal Cumbres" y su gerente; el gerente crea un empleado y le restablece la contraseña; el empleado registra una merma; el administrador cambia el costo de un producto y la merma anterior conserva su costo; al desactivar la sucursal su personal ya no puede entrar

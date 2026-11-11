@@ -9,6 +9,10 @@ const MENU: { href: string; texto: string; roles: readonly Rol[] }[] = [
   { href: "/mis-registros", texto: "Mis registros", roles: ROLES_REGISTRO },
   { href: "/sucursal", texto: "Registros de la sucursal", roles: ["gerente"] },
   { href: "/sucursal", texto: "Registros por sucursal", roles: ["admin"] },
+  { href: "/usuarios", texto: "Usuarios", roles: ["gerente", "admin"] },
+  { href: "/admin/sucursales", texto: "Sucursales", roles: ["admin"] },
+  { href: "/admin/productos", texto: "Productos", roles: ["admin"] },
+  { href: "/admin/motivos", texto: "Motivos", roles: ["admin"] },
 ];
 
 export default async function LayoutApp({ children }: LayoutProps<"/">) {
@@ -30,7 +34,7 @@ export default async function LayoutApp({ children }: LayoutProps<"/">) {
             <button className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100">Cerrar sesión</button>
           </form>
         </div>
-        <nav aria-label="Principal" className="mx-auto flex max-w-3xl gap-1 px-4">
+        <nav aria-label="Principal" className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-4 whitespace-nowrap">
           {menu.map((m) => (
             <Link key={m.href} href={m.href} className="rounded-t-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900">
               {m.texto}
