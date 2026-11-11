@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { salir } from "@/app/login/actions";
-import { requireUsuario, ROLES_REGISTRO } from "@/lib/auth";
+import { requireUsuario, ROLES_REGISTRO, type Rol } from "@/lib/auth";
 import { PUESTOS } from "@/lib/formato";
 
-// Menú según rol. Fase 1: todos los usuarios de sucursal registran y ven sus registros.
-const MENU = [
+// Menú según rol. Ocultarlo es solo comodidad: cada página y acción valida el rol en el servidor.
+const MENU: { href: string; texto: string; roles: readonly Rol[] }[] = [
   { href: "/", texto: "Registrar merma", roles: ROLES_REGISTRO },
   { href: "/mis-registros", texto: "Mis registros", roles: ROLES_REGISTRO },
-] as const;
+  { href: "/sucursal", texto: "Registros de la sucursal", roles: ["gerente"] },
+  { href: "/sucursal", texto: "Registros por sucursal", roles: ["admin"] },
+];
 
 export default async function LayoutApp({ children }: LayoutProps<"/">) {
   const usuario = await requireUsuario();
-  const menu = MENU.filter((m) => (m.roles as readonly string[]).includes(usuario.rol));
+  const menu = MENU.filter((m) => m.roles.includes(usuario.rol));
 
   return (
     <>

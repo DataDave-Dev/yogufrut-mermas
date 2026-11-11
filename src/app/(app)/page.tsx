@@ -12,7 +12,8 @@ export default async function PaginaRegistrar() {
       <section className="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
         <h1 className="text-xl font-bold">Administración</h1>
         <p className="mt-2 text-stone-600">
-          Las pantallas de sucursales, usuarios y catálogos llegan en la fase 3.
+          Consulta los registros en «Registros por sucursal». Las pantallas de sucursales, usuarios y catálogos
+          llegan en la fase 3.
         </p>
       </section>
     );

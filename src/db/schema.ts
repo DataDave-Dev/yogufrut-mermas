@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  index,
   customType,
   integer,
   numeric,
@@ -13,8 +14,9 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { ROLES } from "../lib/auth-tipos";
 
-export const rolEnum = pgEnum("rol", ["empleado", "encargado", "gerente", "admin"]);
+export const rolEnum = pgEnum("rol", ROLES);
 export const unidadEnum = pgEnum("unidad", ["L", "kg", "pz"]);
 
 const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
@@ -91,8 +93,19 @@ export const mermas = pgTable(
     canceladaPor: integer("cancelada_por").references(() => usuarios.id),
     motivoCancelacion: text("motivo_cancelacion"),
   },
-  (t) => [check("mermas_cantidad_positiva", sql`${t.cantidad} > 0`)],
+  (t) => [
+    check("mermas_cantidad_positiva", sql`${t.cantidad} > 0`),
+    index("mermas_usuario_fecha").on(t.usuarioId, t.creadaEn),
+    index("mermas_sucursal_fecha").on(t.sucursalId, t.creadaEn),
+  ],
 );
+
+/** Intentos fallidos de login por nombre de usuario escrito (exista o no), para frenar fuerza bruta. */
+export const intentosLogin = pgTable("intentos_login", {
+  usuario: text("usuario").primaryKey(),
+  fallidos: integer("fallidos").notNull().default(0),
+  ultimoFallo: timestamp("ultimo_fallo", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const fotosMerma = pgTable("fotos_merma", {
   mermaId: integer("merma_id")

@@ -1,13 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-
-const PASSWORD = process.env.SEED_PASSWORD ?? "yogufrut123";
-
-async function entrar(page: Page, usuario: string, password = PASSWORD) {
-  await page.goto("/login");
-  await page.getByLabel("Usuario").fill(usuario);
-  await page.getByLabel("Contraseña").fill(password);
-  await page.getByRole("button", { name: "Entrar" }).click();
-}
+import { expect, test } from "@playwright/test";
+import { entrar } from "./utilidades";
 
 test("contraseña incorrecta no entra", async ({ page }) => {
   await entrar(page, "empleado", "incorrecta");

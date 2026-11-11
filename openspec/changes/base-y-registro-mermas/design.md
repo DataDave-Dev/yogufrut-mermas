@@ -51,8 +51,11 @@ Una función `requireUsuario({ roles?, sucursalId? })` que usan todas las Server
 - Antes de insertar se busca una merma del mismo usuario, producto y cantidad en los últimos 5 minutos; si existe, la acción devuelve "posible duplicado" y la UI pide confirmación, que reenvía la acción con `confirmarDuplicado=true`.
 
 ### Fotos en PostgreSQL (bytea)
-La imagen se reduce en el navegador (máximo 1600 px, WebP) antes de subirla; el servidor valida tipo y tamaño (≤ 5 MB) y la guarda en `fotos_merma`. Se sirve por una ruta que aplica la misma autorización que el registro.
+La imagen se reduce en el navegador (máximo 1600 px, WebP) antes de subirla; el servidor valida el tipo real leyendo los primeros bytes (no el que declara el navegador) y el tamaño (≤ 5 MB) y la guarda en `fotos_merma`. Se sirve por una ruta que aplica la misma autorización que el registro.
 - *Alternativa:* almacenamiento de objetos (S3/R2). Descartada por ahora: agrega servicio y credenciales. Límite conocido: con miles de fotos la base crece; migrar a almacenamiento de objetos cuando pase de unos GB.
+
+### Envío manual del formulario de merma
+React 19 vacía un `<form action>` tras cada envío, lo que borraba lo capturado cuando había errores o aviso de duplicado. El formulario de merma envía con `onSubmit` + `startTransition`, y se reinicia cambiando su `key` solo tras guardar o descartar. Requiere JavaScript (Chrome/Edge lo tienen).
 
 ### Validación con Zod
 Un esquema por formulario, compartido entre cliente (mensajes inmediatos) y servidor (fuente de verdad).
@@ -70,7 +73,7 @@ Tailwind CSS, enfoque móvil primero, botones grandes. El registro de merma es l
 ## Risks / Trade-offs
 
 - [Contraseñas débiles o compartidas entre turnos] → mínimo 8 caracteres, cuentas personales, el gerente puede restablecer y desactivar.
-- [Ataques de fuerza bruta al login] → mensaje genérico y retraso progresivo por usuario tras 5 intentos fallidos.
+- [Ataques de fuerza bruta al login] → mensaje genérico y espera progresiva por nombre de usuario escrito (exista o no) tras 5 intentos fallidos: 1 s, 2 s, 4 s… hasta 5 min. Se guarda en la tabla `intentos_login` para que funcione con varias instancias.
 - [Fotos llenando la base] → compresión en el navegador y límite de 5 MB; migrar a almacenamiento de objetos si crece.
 - [Costos estimados en el catálogo inicial] → el administrador los corrige; el registro congela el costo al momento de capturar.
 - [Hosting no definido] → la app solo requiere Node y PostgreSQL; se define antes del despliegue.

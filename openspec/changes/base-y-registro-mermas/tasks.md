@@ -14,14 +14,14 @@
 
 ## 2. Fase 2 — Registro completo: foto, duplicados y cancelación
 
-- [ ] 2.1 (Tabla `fotos_merma` ya creada en la migración inicial) Adjuntar foto opcional (reducción en navegador a WebP, validación de tipo y 5 MB en servidor)
-- [ ] 2.2 Ruta protegida para ver la foto y detalle del registro con foto
-- [ ] 2.3 Aviso de posible duplicado (mismo usuario, producto y cantidad en 5 minutos) con confirmación en la UI
-- [ ] 2.4 Pantalla "Registros de la sucursal" para gerente (su sucursal) y administrador (selector de sucursal), paginada de 50 en 50, con nombre de quién registró
-- [ ] 2.5 Cancelación con motivo obligatorio (gerente de su sucursal, administrador), guarda quién y cuándo; estado "Cancelado" visible en Mis registros
-- [ ] 2.6 Retraso progresivo del login tras 5 intentos fallidos
-- [ ] 2.7 Pruebas unitarias de permisos de cancelación y detección de duplicado; E2E: registrar con foto → aviso de duplicado → gerente cancela → empleado lo ve cancelado
-- [ ] 2.8 Verificación manual: empleado registra con foto y repite el registro (aparece el aviso); el gerente lo cancela con motivo; el empleado lo ve cancelado; un empleado no puede abrir la URL de cancelación
+- [x] 2.1 (Tabla `fotos_merma` ya creada en la migración inicial) Adjuntar foto opcional (reducción en navegador a WebP, validación de tipo y 5 MB en servidor)
+- [x] 2.2 Ruta protegida para ver la foto y detalle del registro con foto
+- [x] 2.3 Aviso de posible duplicado (mismo usuario, producto y cantidad en 5 minutos) con confirmación en la UI
+- [x] 2.4 Pantalla "Registros de la sucursal" para gerente (su sucursal) y administrador (selector de sucursal), paginada de 50 en 50, con nombre de quién registró
+- [x] 2.5 Cancelación con motivo obligatorio (gerente de su sucursal, administrador), guarda quién y cuándo; estado "Cancelado" visible en Mis registros
+- [x] 2.6 Retraso progresivo del login tras 5 intentos fallidos
+- [x] 2.7 Pruebas unitarias de permisos de cancelación, espera de login y detección del tipo de foto (el duplicado se cubre en E2E porque vive en SQL); E2E: registrar con foto → aviso de duplicado → gerente cancela → empleado lo ve cancelado
+- [x] 2.8 Verificación manual: empleado registra con foto y repite el registro (aparece el aviso); el gerente lo cancela con motivo; el empleado lo ve cancelado; un empleado no puede abrir la URL de cancelación
 
 ## 3. Fase 3 — Administración: sucursales, usuarios y catálogos
 

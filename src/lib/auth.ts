@@ -11,7 +11,8 @@ import { sesionVigente } from "./reglas-sesion";
 const COOKIE = "yogufrut_sesion";
 const RENOVAR_CADA_MS = 60_000;
 
-export type Rol = (typeof usuarios.$inferSelect)["rol"];
+export type { Rol } from "./auth-tipos";
+import type { Rol } from "./auth-tipos";
 /** Roles que pertenecen a una sucursal y registran mermas. */
 export const ROLES_REGISTRO = ["empleado", "encargado", "gerente"] as const satisfies readonly Rol[];
 
