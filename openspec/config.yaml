@@ -29,3 +29,10 @@ context: |
   Navegadores objetivo: Chrome y Edge.
   Idioma de UI y documentación: español.
   Commits: conventional commits, sin atribución de IA.
+
+rules:
+  tasks:
+    - Organizar las tareas en fases verticales (end-to-end), no por capas técnicas.
+    - La fase 1 debe permitir recorrer el flujo principal de punta a punta (UI → servidor → base de datos → UI) funcionando.
+    - Cada fase siguiente agrega funcionalidad completa y verificable sobre un flujo que ya funciona.
+    - Cada fase termina con una verificación manual del flujo descrita como tarea.
