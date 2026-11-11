@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-stone-50 text-stone-900;
+}
+
+@layer components {
+  .campo {
+    @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 disabled:bg-stone-100;
+  }
+  .boton-primario {
+    @apply rounded-lg bg-rose-600 px-4 py-3 text-base font-semibold text-white hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:outline-none active:bg-rose-800 disabled:opacity-60;
+  }
+}

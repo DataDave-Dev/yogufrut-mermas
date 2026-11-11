@@ -1,20 +1,20 @@
 ## 1. Fase 1 — Flujo mínimo: login → registrar merma → Mis registros
 
-- [ ] 1.1 Crear proyecto Next.js (App Router, TypeScript, Tailwind, ESLint) y `docker-compose.yml` con PostgreSQL; `.env.example` con `DATABASE_URL`
-- [ ] 1.2 Configurar Drizzle: tablas `sucursales`, `usuarios`, `sesiones`, `productos`, `motivos`, `mermas` según design.md; generar y aplicar la primera migración
-- [ ] 1.3 Script de carga inicial idempotente: productos y motivos desde `docs/*.csv`, "Sucursal Sendero" y un usuario de cada rol con contraseña de desarrollo
-- [ ] 1.4 Sesiones: hash argon2id, creación de sesión, cookie segura, validación de expiración (30 min de inactividad / 8 h máximo), `requireUsuario()`
-- [ ] 1.5 Pantalla de inicio de sesión con mensaje genérico de error y cierre de sesión
-- [ ] 1.6 Layout con encabezado (nombre, puesto, sucursal) y menú según rol
-- [ ] 1.7 Formulario "Registrar merma": producto con búsqueda por categoría, unidad automática, cantidad, motivo, observaciones; validación con Zod en cliente y servidor
-- [ ] 1.8 Server Action que guarda la merma con sucursal, usuario, fecha y costo tomados de la sesión y del catálogo; `clave_envio` única contra doble clic; confirmación con costo calculado
-- [ ] 1.9 Pantalla "Mis registros": lista de las mermas del usuario, más reciente primero, con fecha/hora en `America/Monterrey`
-- [ ] 1.10 Pruebas unitarias de expiración de sesión y cálculo de costo; prueba E2E del flujo login → registrar → ver en Mis registros
+- [x] 1.1 Crear proyecto Next.js (App Router, TypeScript, Tailwind, ESLint) y `docker-compose.yml` con PostgreSQL; `.env.example` con `DATABASE_URL`
+- [x] 1.2 Configurar Drizzle: tablas `sucursales`, `usuarios`, `sesiones`, `productos`, `motivos`, `mermas` según design.md; generar y aplicar la primera migración
+- [x] 1.3 Script de carga inicial idempotente: productos y motivos desde `docs/*.csv`, "Sucursal Sendero" y un usuario de cada rol con contraseña de desarrollo
+- [x] 1.4 Sesiones: hash argon2id, creación de sesión, cookie segura, validación de expiración (30 min de inactividad / 8 h máximo), `requireUsuario()`
+- [x] 1.5 Pantalla de inicio de sesión con mensaje genérico de error y cierre de sesión
+- [x] 1.6 Layout con encabezado (nombre, puesto, sucursal) y menú según rol
+- [x] 1.7 Formulario "Registrar merma": producto con búsqueda por categoría, unidad automática, cantidad, motivo, observaciones; validación con Zod en cliente y servidor
+- [x] 1.8 Server Action que guarda la merma con sucursal, usuario, fecha y costo tomados de la sesión y del catálogo; `clave_envio` única contra doble clic; confirmación con costo calculado
+- [x] 1.9 Pantalla "Mis registros": lista de las mermas del usuario, más reciente primero, con fecha/hora en `America/Monterrey`
+- [x] 1.10 Pruebas unitarias de expiración de sesión y cálculo de costo; prueba E2E del flujo login → registrar → ver en Mis registros
 - [ ] 1.11 Verificación manual: entrar como empleado de Sucursal Sendero, registrar 3 L de "Base de yogurt de fresa" por "Caducidad", verla en Mis registros con su costo; un usuario con contraseña incorrecta no entra
 
 ## 2. Fase 2 — Registro completo: foto, duplicados y cancelación
 
-- [ ] 2.1 Tabla `fotos_merma` y migración; adjuntar foto opcional (reducción en navegador a WebP, validación de tipo y 5 MB en servidor)
+- [ ] 2.1 (Tabla `fotos_merma` ya creada en la migración inicial) Adjuntar foto opcional (reducción en navegador a WebP, validación de tipo y 5 MB en servidor)
 - [ ] 2.2 Ruta protegida para ver la foto y detalle del registro con foto
 - [ ] 2.3 Aviso de posible duplicado (mismo usuario, producto y cantidad en 5 minutos) con confirmación en la UI
 - [ ] 2.4 Pantalla "Registros de la sucursal" para gerente (su sucursal) y administrador (selector de sucursal), paginada de 50 en 50, con nombre de quién registró
