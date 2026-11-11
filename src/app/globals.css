@@ -1,18 +1,84 @@
 @import "tailwindcss";
 
+/* Paleta Yogufrut: neutros cálidos (arena), un acento (frambuesa) y tonos semánticos. */
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, sans-serif;
+
+  --color-arena-50: #faf8f5;
+  --color-arena-100: #f3efe9;
+  --color-arena-200: #e7e0d6;
+  --color-arena-300: #d3c9bb;
+  --color-arena-400: #a99d8d;
+  --color-arena-500: #847868;
+  --color-arena-600: #655b4f;
+  --color-arena-700: #4b433a;
+  --color-arena-800: #332d27;
+  --color-arena-900: #221e1a;
+
+  --color-frambuesa-50: #fcf2f5;
+  --color-frambuesa-100: #f8e1e8;
+  --color-frambuesa-200: #f0c2d0;
+  --color-frambuesa-300: #e296ae;
+  --color-frambuesa-400: #cf6587;
+  --color-frambuesa-500: #b43e64;
+  --color-frambuesa-600: #9a2e52;
+  --color-frambuesa-700: #7d2544;
+  --color-frambuesa-800: #5f1d35;
+  --color-frambuesa-900: #431526;
+
+  --color-menta-50: #eef7f2;
+  --color-menta-100: #d8eee2;
+  --color-menta-600: #2f7a5b;
+  --color-menta-700: #245f47;
+
+  --color-miel-50: #fbf4e6;
+  --color-miel-100: #f5e4bf;
+  --color-miel-600: #a86a12;
+  --color-miel-700: #84530e;
+
+  --color-rojo-50: #fef3f2;
+  --color-rojo-100: #fde0dd;
+  --color-rojo-600: #b42318;
+  --color-rojo-700: #912018;
+
+  /* Sombras con el tono cálido del fondo, no negro genérico. */
+  --shadow-suave: 0 1px 2px rgb(34 30 26 / 0.05), 0 2px 8px -2px rgb(34 30 26 / 0.06);
+  --shadow-elevada: 0 2px 4px rgb(34 30 26 / 0.04), 0 12px 32px -8px rgb(34 30 26 / 0.14);
+  --shadow-acento: 0 8px 24px -8px rgb(154 46 82 / 0.45);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-stone-50 text-stone-900;
+  @apply bg-arena-50 text-arena-900;
+  /* Luz cálida tenue en la parte superior para dar profundidad sin distraer. */
+  background-image: radial-gradient(60rem 30rem at 80% -10rem, rgb(248 225 232 / 0.55), transparent 70%);
+  background-repeat: no-repeat;
+  font-feature-settings: "ss01";
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 @layer components {
   .campo {
-    @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 disabled:bg-stone-100;
+    @apply w-full rounded-xl border border-arena-200 bg-white px-3.5 py-2.5 text-base text-arena-900 shadow-[inset_0_1px_1px_rgb(34_30_26/0.03)] transition outline-none placeholder:text-arena-400 hover:border-arena-300 focus:border-frambuesa-400 focus:ring-4 focus:ring-frambuesa-100 disabled:bg-arena-100 disabled:text-arena-500 aria-invalid:border-rojo-600 aria-invalid:ring-rojo-100;
   }
+  /* Compatibilidad: formularios que aún usan la clase directa. */
   .boton-primario {
-    @apply rounded-lg bg-rose-600 px-4 py-3 text-base font-semibold text-white hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:outline-none active:bg-rose-800 disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-frambuesa-600 px-4 py-3 text-base font-semibold text-white shadow-acento transition hover:bg-frambuesa-700 focus-visible:ring-4 focus-visible:ring-frambuesa-200 focus-visible:outline-none active:translate-y-px disabled:pointer-events-none disabled:opacity-55;
+  }
+  .cifra {
+    @apply font-display tracking-tight tabular-nums;
   }
 }

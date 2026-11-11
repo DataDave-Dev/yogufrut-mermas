@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { entrar } from "./utilidades";
+import { entrar, filas, navegar, salir } from "./utilidades";
 
 test("contraseña incorrecta no entra", async ({ page }) => {
   await entrar(page, "empleado", "incorrecta");
@@ -18,7 +18,8 @@ test("empleado registra una merma y la ve en Mis registros", async ({ page }, in
   const costo = info.project.name === "celular" ? "$78.00" : "$156.00";
 
   await entrar(page, "empleado");
-  await expect(page.getByText("Empleado · Sucursal Sendero")).toBeVisible();
+  await expect(page.getByText("Empleado · Sucursal Sendero")).toBeAttached();
+  await navegar(page, "Registrar merma");
 
   await page.getByLabel("Producto", { exact: true }).selectOption({ label: "Base de yogurt de fresa" });
   await expect(page.getByLabel("Unidad de medida")).toHaveText("L");
@@ -32,19 +33,19 @@ test("empleado registra una merma y la ve en Mis registros", async ({ page }, in
   await expect(page.getByLabel("Producto", { exact: true })).toHaveValue("");
   await expect(page.getByLabel("Unidad de medida")).toHaveText("—");
 
-  await page.getByRole("link", { name: "Mis registros" }).click();
-  const registro = page.getByRole("listitem").filter({ hasText: `Base de yogurt de fresa · ${cantidad} L` });
+  await navegar(page, "Mis registros");
+  const registro = filas(page).filter({ hasText: `Base de yogurt de fresa · ${cantidad} L` });
   await expect(registro).toContainText(costo);
   await expect(registro).toContainText("Caducidad");
 
-  await page.getByRole("button", { name: "Cerrar sesión" }).click();
-  await expect(page).toHaveURL(/\/login$/);
+  await salir(page);
   await page.goto("/mis-registros");
   await expect(page).toHaveURL(/\/login$/);
 });
 
 test("cantidad inválida no se guarda", async ({ page }) => {
   await entrar(page, "encargado");
+  await page.goto("/registrar");
   await page.getByLabel("Producto", { exact: true }).selectOption({ label: "Leche entera" });
   await page.getByLabel("Cantidad", { exact: true }).fill("0");
   await page.getByLabel("Motivo", { exact: true }).selectOption({ label: "Derrame" });

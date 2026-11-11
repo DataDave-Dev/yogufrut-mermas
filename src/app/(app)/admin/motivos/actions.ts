@@ -19,7 +19,7 @@ async function guardar(operacion: () => Promise<unknown>, ok: string): Promise<R
     throw e;
   }
   revalidatePath("/admin/motivos");
-  revalidatePath("/");
+  revalidatePath("/registrar");
   return { ok };
 }
 

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { entrar, llenarMerma, salir } from "./utilidades";
+import { entrar, filas, llenarMerma, navegar, salir } from "./utilidades";
 
 test("encargado filtra el historial, ve totales y abre un detalle", async ({ page }, info) => {
   // Producto distinto por proyecto: ambos comparten la base de pruebas.
@@ -16,7 +16,7 @@ test("encargado filtra el historial, ve totales y abre un detalle", async ({ pag
   await salir(page);
 
   await entrar(page, "encargado");
-  await page.getByRole("link", { name: "Historial" }).click();
+  await navegar(page, "Historial");
   await expect(page.getByRole("heading", { name: "Historial de Sucursal Sendero" })).toBeVisible();
 
   // Producto + motivo + rango de hoy.
@@ -30,12 +30,12 @@ test("encargado filtra el historial, ve totales y abre un detalle", async ({ pag
   const esperado = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format((kilo * 4) / 100);
   await expect(page.getByRole("status")).toContainText("2 registros");
   await expect(page.getByRole("status")).toContainText(esperado);
-  await expect(page.getByRole("listitem")).toHaveCount(2);
-  await expect(page.getByRole("listitem").first()).toContainText("Ana López");
+  await expect(filas(page)).toHaveCount(2);
+  await expect(filas(page).first()).toContainText("Ana López");
 
   // La URL filtrada se puede recargar.
   await page.reload();
-  await expect(page.getByRole("listitem")).toHaveCount(2);
+  await expect(filas(page)).toHaveCount(2);
 
   // Desde mañana: nada.
   await page.getByLabel("Desde").fill(manana);
@@ -48,10 +48,10 @@ test("encargado filtra el historial, ve totales y abre un detalle", async ({ pag
   await page.getByLabel("Hasta").fill(hoy);
   await page.getByRole("button", { name: "Filtrar" }).click();
   await expect(page.getByRole("alert")).toContainText("posterior");
-  await expect(page.getByRole("listitem")).toHaveCount(2);
+  await expect(filas(page)).toHaveCount(2);
 
   // Detalle desde el historial.
-  await page.getByRole("listitem").first().getByRole("link").click();
+  await filas(page).first().getByRole("link").click();
   await expect(page.getByRole("heading", { name: producto })).toBeVisible();
   await expect(page.getByText("Ana López (Empleado)")).toBeVisible();
 });

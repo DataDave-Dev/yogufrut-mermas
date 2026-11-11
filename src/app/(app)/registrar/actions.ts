@@ -112,6 +112,7 @@ export async function registrarMerma(previo: EstadoRegistro, formData: FormData)
     }
   });
 
+  revalidatePath("/");
   revalidatePath("/mis-registros");
   revalidatePath("/sucursal");
   return {

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { entrar, llenarMerma, PNG_1PX, salir } from "./utilidades";
+import { PNG_1PX, entrar, filas, llenarMerma, navegar, salir } from "./utilidades";
 
 test("foto, aviso de duplicado y cancelación por el gerente", async ({ page }, info) => {
   // Cantidad distinta por proyecto: ambos comparten base de datos y el aviso de duplicado.
@@ -31,21 +31,21 @@ test("foto, aviso de duplicado y cancelación por el gerente", async ({ page }, 
   await page.getByRole("button", { name: "Sí, guardar" }).click();
   await expect(page.getByRole("status")).toContainText("Kiwi");
 
-  await page.getByRole("link", { name: "Mis registros" }).click();
-  await expect(page.getByRole("listitem").filter({ hasText: registro })).toHaveCount(2);
+  await navegar(page, "Mis registros");
+  await expect(filas(page).filter({ hasText: registro })).toHaveCount(2);
   await salir(page);
 
   // Gerente ve los registros de su sucursal con el nombre de quien registró.
   await entrar(page, "gerente");
-  await page.getByRole("link", { name: "Historial" }).click();
-  const conFoto = page.getByRole("listitem").filter({ hasText: registro }).filter({ hasText: "📷" });
+  await navegar(page, "Historial");
+  const conFoto = filas(page).filter({ hasText: registro }).filter({ has: page.getByRole("img", { name: "Con foto" }) });
   await expect(conFoto).toContainText("Ana López");
 
   // Detalle con foto y cancelación con motivo.
   await conFoto.getByRole("link").click();
   const foto = page.getByRole("img", { name: /Foto de evidencia/ });
   await expect(foto).toBeVisible();
-  expect(await foto.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await expect.poll(() => foto.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Cancelar registro" }).click();
   await page.getByLabel("Motivo de la cancelación").fill("Capturado dos veces");
   await page.getByRole("button", { name: "Confirmar cancelación" }).click();
@@ -57,7 +57,7 @@ test("foto, aviso de duplicado y cancelación por el gerente", async ({ page }, 
   // El empleado lo ve cancelado; el encargado ve el detalle pero no puede cancelar.
   await entrar(page, "empleado");
   await page.goto("/mis-registros");
-  await expect(page.getByRole("listitem").filter({ hasText: registro }).filter({ hasText: "Cancelado" })).toHaveCount(1);
+  await expect(filas(page).filter({ hasText: registro }).filter({ hasText: "Cancelado" })).toHaveCount(1);
   await page.goto(urlDetalle);
   await expect(page.getByRole("button", { name: "Cancelar registro" })).toBeHidden();
   await salir(page);
@@ -95,11 +95,11 @@ test("archivo que no es imagen se rechaza", async ({ page }) => {
 
 test("administrador elige la sucursal a revisar", async ({ page }) => {
   await entrar(page, "admin");
-  await page.getByRole("link", { name: "Historial" }).click();
-  await page.getByLabel("Sucursal").selectOption({ label: "Sucursal Sendero" });
+  await navegar(page, "Historial");
+  await page.getByLabel("Sucursal", { exact: true }).selectOption({ label: "Sucursal Sendero" });
   await page.getByRole("button", { name: "Ver" }).click();
   await expect(page.getByRole("heading", { name: "Historial de Sucursal Sendero" })).toBeVisible();
-  await expect(page.getByRole("listitem").first()).toBeVisible();
+  await expect(filas(page).first()).toBeVisible();
 });
 
 test("freno tras 5 intentos fallidos", async ({ page }, info) => {

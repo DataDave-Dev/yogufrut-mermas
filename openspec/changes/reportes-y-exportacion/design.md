@@ -37,6 +37,9 @@ Totales y rankings con `GROUP BY` sobre `mermas` filtrado por sucursal y rango (
 ### PDF con vista imprimible
 `/reportes/imprimir` fuera del layout con menú, con CSS `@media print` y tamaño carta; un componente cliente llama `window.print()` al cargar. Chrome y Edge guardan como PDF. Sin dependencia nueva (decisión del usuario).
 
+### Interfaz: sistema de diseño y sidebar
+Paleta propia en tokens de Tailwind (`arena` neutros cálidos, `frambuesa` acento único, `menta`/`miel`/`rojo` semánticos), Bricolage Grotesque para títulos y cifras y Geist para texto. Componentes compartidos en `src/components/ui` (botón, tarjeta, indicador, campo, encabezado, estado vacío, insignia, aviso, íconos SVG propios). Navegación en sidebar agrupado por rol, contraíble a íconos (preferencia en cookie para evitar parpadeo) y cajón accesible en celular. `/` es un dashboard por rol; el registro vive en `/registrar`.
+
 ### Permisos
 `puedeVerReportes(rol)`: encargado, gerente y admin. `puedeExportar(rol)`: gerente y admin. Se agregan a `permisos.ts` con pruebas. El menú muestra "Historial" y "Reportes" a encargado y gerente; el admin ve "Reportes" (resumen general) e "Historial".
 

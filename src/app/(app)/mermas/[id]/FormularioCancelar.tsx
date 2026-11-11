@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Aviso } from "@/components/ui/Aviso";
+import { estiloBoton } from "@/components/ui/boton";
+import { Campo } from "@/components/ui/Campo";
 import { cancelarMerma, type EstadoCancelacion } from "./actions";
 
 export function FormularioCancelar({ mermaId }: { mermaId: number }) {
@@ -9,33 +12,30 @@ export function FormularioCancelar({ mermaId }: { mermaId: number }) {
 
   if (!abierto) {
     return (
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        className="rounded-lg px-4 py-2 font-semibold text-red-700 ring-1 ring-red-200 hover:bg-red-50"
-      >
-        Cancelar registro
-      </button>
+      <div>
+        <button type="button" onClick={() => setAbierto(true)} className={estiloBoton({ variante: "peligro" })}>
+          Cancelar registro
+        </button>
+      </div>
     );
   }
 
   return (
-    <form action={accion} className="flex flex-col gap-2 rounded-xl bg-red-50 p-4 ring-1 ring-red-200">
+    <form action={accion} className="flex flex-col gap-4 rounded-2xl bg-rojo-50/60 p-5 ring-1 ring-rojo-100">
+      <div>
+        <h2 className="font-display font-semibold text-rojo-700">Cancelar este registro</h2>
+        <p className="text-sm text-arena-600">No se borra: queda marcado como cancelado, con tu nombre y el motivo.</p>
+      </div>
       <input type="hidden" name="id" value={mermaId} />
-      <label htmlFor="motivo-cancelacion" className="text-sm font-medium text-red-900">
-        Motivo de la cancelación
-      </label>
-      <input id="motivo-cancelacion" name="motivo" required minLength={3} maxLength={200} className="campo" />
-      {estado.error && (
-        <p role="alert" className="text-sm text-red-700">
-          {estado.error}
-        </p>
-      )}
+      <Campo id="motivo-cancelacion" etiqueta="Motivo de la cancelación">
+        <input id="motivo-cancelacion" name="motivo" required minLength={3} maxLength={200} className="campo" placeholder="Ej. capturado dos veces" />
+      </Campo>
+      {estado.error && <Aviso tono="peligro">{estado.error}</Aviso>}
       <div className="flex flex-wrap gap-2">
-        <button disabled={enviando} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+        <button disabled={enviando} className={estiloBoton({ variante: "peligroSolido" })}>
           {enviando ? "Cancelando…" : "Confirmar cancelación"}
         </button>
-        <button type="button" onClick={() => setAbierto(false)} className="rounded-lg px-4 py-2 text-stone-700 hover:bg-white">
+        <button type="button" onClick={() => setAbierto(false)} className={estiloBoton({ variante: "fantasma" })}>
           Volver
         </button>
       </div>

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { entrar, llenarMerma, PASSWORD, salir } from "./utilidades";
+import { PASSWORD, entrar, filas, llenarMerma, navegar, salir } from "./utilidades";
 
 async function crearUsuario(page: Page, datos: { nombre: string; usuario: string; password: string; puesto: string; sucursal?: string }) {
   const formulario = page.locator("form").filter({ has: page.getByRole("button", { name: "Crear usuario" }) });
@@ -13,7 +13,7 @@ async function crearUsuario(page: Page, datos: { nombre: string; usuario: string
 }
 
 function fila(page: Page, texto: string) {
-  return page.getByRole("listitem").filter({ hasText: texto });
+  return filas(page).filter({ hasText: texto });
 }
 
 test("alta de sucursal y personal, registro, cambio de costo y desactivación", async ({ page }, info) => {
@@ -25,8 +25,8 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
 
   // Administrador: sucursal, producto y gerente.
   await entrar(page, "admin");
-  await expect(page).toHaveURL(/\/sucursal$/);
-  await page.getByRole("link", { name: "Sucursales" }).click();
+  await expect(page.getByRole("heading", { name: /Buen(os|as) .*, Administrador/ })).toBeVisible();
+  await navegar(page, "Sucursales");
   await page.getByLabel("Nombre", { exact: true }).first().fill(sucursal);
   await page.getByRole("button", { name: "Crear sucursal" }).click();
   await expect(fila(page, sucursal)).toBeVisible();
@@ -35,7 +35,7 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
   await page.getByRole("button", { name: "Crear sucursal" }).click();
   await expect(page.getByText("Ya existe una sucursal con ese nombre")).toBeVisible();
 
-  await page.getByRole("link", { name: "Productos" }).click();
+  await navegar(page, "Productos");
   const nuevoProducto = page.locator("form").filter({ has: page.getByRole("button", { name: "Crear producto" }) });
   await nuevoProducto.getByLabel("Nombre").fill(producto);
   await nuevoProducto.getByLabel("Categoría").fill("Pruebas");
@@ -44,13 +44,13 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
   await nuevoProducto.getByRole("button", { name: "Crear producto" }).click();
   await expect(nuevoProducto.getByRole("status")).toContainText("creado");
 
-  await page.getByRole("link", { name: "Usuarios" }).click();
+  await navegar(page, "Usuarios");
   await crearUsuario(page, { nombre: "Gerente Cumbres", usuario: gerente, password: PASSWORD, puesto: "Gerente", sucursal });
   await salir(page);
 
   // Gerente: crea un empleado y le cambia la contraseña.
   await entrar(page, gerente);
-  await page.getByRole("link", { name: "Usuarios" }).click();
+  await navegar(page, "Usuarios");
   await expect(page.getByRole("heading", { name: `Usuarios de ${sucursal}` })).toBeVisible();
   const puestos = page.getByLabel("Puesto").first().locator("option");
   await expect(puestos).toHaveText(["Selecciona…", "Empleado", "Encargado de turno"]);
@@ -71,7 +71,7 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
   await entrar(page, empleado, "temporal123");
   await expect(page.getByText("Usuario o contraseña incorrectos")).toBeVisible();
   await entrar(page, empleado, "nueva-clave-1");
-  await expect(page.getByText(`Empleado · ${sucursal}`)).toBeVisible();
+  await expect(page.getByText(`Empleado · ${sucursal}`)).toBeAttached();
   await llenarMerma(page, producto, "3", "Caducidad");
   await page.getByRole("button", { name: "Guardar merma" }).click();
   await expect(page.getByRole("status")).toContainText("$30.00");
@@ -79,19 +79,19 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
 
   // Administrador: el nuevo costo no cambia la merma ya registrada.
   await entrar(page, "admin");
-  await page.getByRole("link", { name: "Productos" }).click();
+  await navegar(page, "Productos");
   const filaProducto = fila(page, producto);
   await filaProducto.getByText(`Editar ${producto}`).click();
   await filaProducto.getByLabel("Costo unitario (MXN)").fill("20.00");
   await filaProducto.getByRole("button", { name: "Guardar cambios" }).click();
   await expect(filaProducto.getByRole("status")).toContainText("Cambios guardados");
   await page.goto("/sucursal");
-  await page.getByLabel("Sucursal").selectOption({ label: sucursal });
+  await page.getByLabel("Sucursal", { exact: true }).selectOption({ label: sucursal });
   await page.getByRole("button", { name: "Ver" }).click();
   await expect(fila(page, `${producto} · 3 pz`)).toContainText("$30.00");
 
   // Desactivar la sucursal deja fuera a su personal.
-  await page.getByRole("link", { name: "Sucursales" }).click();
+  await navegar(page, "Sucursales");
   const filaSucursal = fila(page, sucursal);
   await filaSucursal.getByText(`Editar ${sucursal}`).click();
   await filaSucursal.getByRole("button", { name: "Desactivar sucursal" }).click();
@@ -117,7 +117,7 @@ test("desactivar un usuario cierra su sesión abierta", async ({ browser }, info
 
   const encargado = await (await browser.newContext()).newPage();
   await entrar(encargado, usuario);
-  await expect(encargado.getByText("Encargado de turno · Sucursal Sendero")).toBeVisible();
+  await expect(encargado.getByText("Encargado de turno · Sucursal Sendero")).toBeAttached();
 
   const filaUsuario = fila(admin, usuario);
   await filaUsuario.getByText(`Editar ${usuario}`).click();

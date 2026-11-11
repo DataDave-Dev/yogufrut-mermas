@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
+import { Aviso } from "@/components/ui/Aviso";
+import { estiloBoton } from "@/components/ui/boton";
+import { Campo } from "@/components/ui/Campo";
 import { iniciarSesion } from "./actions";
 
 export function FormularioLogin() {
@@ -8,20 +11,14 @@ export function FormularioLogin() {
 
   return (
     <form action={accion} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Usuario
-        <input name="usuario" defaultValue={estado.usuario} autoComplete="username" required autoCapitalize="none" className="campo" />
-      </label>
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Contraseña
-        <input name="password" type="password" autoComplete="current-password" required className="campo" />
-      </label>
-      {estado.error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {estado.error}
-        </p>
-      )}
-      <button disabled={enviando} className="boton-primario">
+      <Campo id="usuario" etiqueta="Usuario">
+        <input id="usuario" name="usuario" defaultValue={estado.usuario} autoComplete="username" required autoCapitalize="none" className="campo" />
+      </Campo>
+      <Campo id="password" etiqueta="Contraseña">
+        <input id="password" name="password" type="password" autoComplete="current-password" required className="campo" />
+      </Campo>
+      {estado.error && <Aviso tono="peligro">{estado.error}</Aviso>}
+      <button disabled={enviando} className={estiloBoton({ tamano: "lg", ancho: true })}>
         {enviando ? "Entrando…" : "Entrar"}
       </button>
     </form>

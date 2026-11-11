@@ -1,9 +1,16 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Aviso } from "@/components/ui/Aviso";
+import { Icono } from "@/components/ui/Icono";
+import { Insignia } from "@/components/ui/Insignia";
+import { Tarjeta } from "@/components/ui/Tarjeta";
 import { requireUsuario } from "@/lib/auth";
 import { obtenerMerma } from "@/lib/consultas-mermas";
 import { formatoCantidad, formatoFecha, formatoHora, formatoPesos, PUESTOS } from "@/lib/formato";
 import { puedeCancelarMerma, puedeVerMerma } from "@/lib/permisos";
 import { FormularioCancelar } from "./FormularioCancelar";
+
+export const metadata = { title: "Detalle de merma" };
 
 export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">) {
   const usuario = await requireUsuario();
@@ -12,6 +19,7 @@ export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">
   // Mismo 404 si no existe o no tiene permiso: no revela qué registros existen.
   if (!merma || !puedeVerMerma(usuario, merma)) notFound();
 
+  const volver = usuario.id === merma.usuarioId ? "/mis-registros" : "/sucursal";
   const datos: [string, string][] = [
     ["Sucursal", merma.sucursal],
     ["Registró", `${merma.usuario} (${PUESTOS[merma.rolUsuario]})`],
@@ -23,42 +31,57 @@ export default async function DetalleMerma({ params }: PageProps<"/mermas/[id]">
   ];
 
   return (
-    <article className="flex flex-col gap-4 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
-      <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-xl font-bold">{merma.producto}</h1>
-        <p className={`text-xl font-bold ${merma.canceladaEn ? "text-stone-500 line-through" : "text-rose-700"}`}>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+      <Link href={volver} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-arena-600 hover:text-arena-900">
+        <Icono nombre="izquierda" className="size-4" /> Volver
+      </Link>
+
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="mb-1 flex items-center gap-2 text-sm text-arena-500">
+            Merma #{merma.id} {merma.canceladaEn && <Insignia tono="peligro">Cancelado</Insignia>}
+          </p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">{merma.producto}</h1>
+        </div>
+        <p className={`cifra text-3xl font-semibold ${merma.canceladaEn ? "text-arena-400 line-through" : "text-frambuesa-700"}`}>
           {formatoPesos(merma.costoTotalCentavos)}
         </p>
       </header>
 
       {merma.canceladaEn && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-red-800">
-          <strong>Cancelado</strong> por {merma.canceladaPor} el {formatoFecha(merma.canceladaEn)}{" "}
-          {formatoHora(merma.canceladaEn)} · Motivo: {merma.motivoCancelacion}
-        </p>
+        <Aviso tono="peligro" rol="status">
+          <strong>Cancelado</strong> por {merma.canceladaPor} el {formatoFecha(merma.canceladaEn)} {formatoHora(merma.canceladaEn)} · Motivo:{" "}
+          {merma.motivoCancelacion}
+        </Aviso>
       )}
 
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-        {datos.map(([etiqueta, valor]) => (
-          <div key={etiqueta} className="contents">
-            <dt className="text-stone-500">{etiqueta}</dt>
-            <dd className="break-words">{valor}</dd>
-          </div>
-        ))}
-      </dl>
+      <div className={`grid gap-5 ${merma.tieneFoto ? "md:grid-cols-[1fr_minmax(0,18rem)]" : ""}`}>
+        <Tarjeta titulo="Datos del registro">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
+            {datos.map(([etiqueta, valor]) => (
+              <div key={etiqueta} className="contents">
+                <dt className="text-arena-500">{etiqueta}</dt>
+                <dd className="break-words text-arena-900">{valor}</dd>
+              </div>
+            ))}
+          </dl>
+        </Tarjeta>
 
-      {merma.tieneFoto && (
-        <a href={`/mermas/${merma.id}/foto`} target="_blank" rel="noopener noreferrer">
-          {/* eslint-disable-next-line @next/next/no-img-element -- foto privada servida por ruta protegida */}
-          <img
-            src={`/mermas/${merma.id}/foto`}
-            alt={`Foto de evidencia de ${merma.producto}`}
-            className="max-h-96 rounded-xl object-contain ring-1 ring-stone-200"
-          />
-        </a>
-      )}
+        {merma.tieneFoto && (
+          <a
+            href={`/mermas/${merma.id}/foto`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block overflow-hidden rounded-2xl bg-white shadow-suave ring-1 ring-arena-200/70 transition hover:shadow-elevada"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- foto privada servida por ruta protegida */}
+            <img src={`/mermas/${merma.id}/foto`} alt={`Foto de evidencia de ${merma.producto}`} className="aspect-[4/3] w-full object-cover" />
+            <span className="block px-4 py-2.5 text-sm text-arena-600">Foto de evidencia · abrir</span>
+          </a>
+        )}
+      </div>
 
       {!merma.canceladaEn && puedeCancelarMerma(usuario, merma) && <FormularioCancelar mermaId={merma.id} />}
-    </article>
+    </div>
   );
 }

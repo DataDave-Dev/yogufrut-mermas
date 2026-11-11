@@ -1,5 +1,10 @@
 import { asc, eq } from "drizzle-orm";
 import Link from "next/link";
+import { Aviso } from "@/components/ui/Aviso";
+import { estiloBoton } from "@/components/ui/boton";
+import { Campo } from "@/components/ui/Campo";
+import { EncabezadoPagina } from "@/components/ui/EncabezadoPagina";
+import { Icono } from "@/components/ui/Icono";
 import { ListaMermas } from "@/components/ListaMermas";
 import { Paginacion } from "@/components/Paginacion";
 import { db } from "@/db";
@@ -18,6 +23,8 @@ const OPCIONES_ESTADO = [
   { id: "todos", nombre: "Todos" },
 ];
 
+export const metadata = { title: "Historial" };
+
 export default async function Historial({ searchParams }: PageProps<"/sucursal">) {
   const usuario = await requireUsuario(["encargado", "gerente", "admin"]);
   const filtros = leerFiltros(await searchParams);
@@ -32,11 +39,19 @@ export default async function Historial({ searchParams }: PageProps<"/sucursal">
     : { id: usuario.sucursalId!, nombre: usuario.sucursalNombre! };
 
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">Historial{sucursal ? ` de ${sucursal.nombre}` : ""}</h1>
-      {esAdmin && <SelectorSucursal sucursales={listaSucursales} actual={sucursal?.id} />}
-      {sucursal && <Resultados sucursalId={sucursal.id} filtros={{ ...filtros, sucursal: esAdmin ? sucursal.id : undefined }} />}
-    </section>
+    <>
+      <EncabezadoPagina
+        antetitulo="Historial"
+        titulo={sucursal ? `Historial de ${sucursal.nombre}` : "Historial"}
+        descripcion="Filtra los registros por fecha, producto, motivo o quién los capturó."
+        acciones={esAdmin && <SelectorSucursal sucursales={listaSucursales} actual={sucursal?.id} />}
+      />
+      {sucursal ? (
+        <Resultados sucursalId={sucursal.id} filtros={{ ...filtros, sucursal: esAdmin ? sucursal.id : undefined }} />
+      ) : (
+        <p className="text-arena-600">Elige una sucursal para ver su historial.</p>
+      )}
+    </>
   );
 }
 
@@ -63,7 +78,7 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
 
   return (
     <>
-      <form className="grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-stone-200 sm:grid-cols-3">
+      <form className="grid gap-4 rounded-2xl bg-white p-5 shadow-suave ring-1 ring-arena-200/70 sm:grid-cols-2 lg:grid-cols-3">
         {filtros.sucursal && <input type="hidden" name="sucursal" value={filtros.sucursal} />}
         <Fecha etiqueta="Desde" nombre="desde" valor={filtros.desde} />
         <Fecha etiqueta="Hasta" nombre="hasta" valor={filtros.hasta} />
@@ -71,27 +86,26 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
         <Selector etiqueta="Producto" nombre="producto" valor={filtros.producto} opciones={opcionesProductos} />
         <Selector etiqueta="Motivo" nombre="motivo" valor={filtros.motivo} opciones={opcionesMotivos} />
         <Selector etiqueta="Registró" nombre="usuario" valor={filtros.usuario} opciones={opcionesUsuarios} />
-        <div className="flex items-center gap-3 sm:col-span-3">
-          <button className="boton-primario py-2">Filtrar</button>
-          <Link href={`/sucursal${aQuery({ sucursal: filtros.sucursal })}`} className="text-sm text-stone-600 underline">
+        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-3">
+          <button className={estiloBoton()}>
+            <Icono nombre="filtro" className="size-4" /> Filtrar
+          </button>
+          <Link href={`/sucursal${aQuery({ sucursal: filtros.sucursal })}`} className={estiloBoton({ variante: "fantasma" })}>
             Limpiar filtros
           </Link>
         </div>
       </form>
 
-      {filtros.avisoFechas && (
-        <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-amber-900">
-          {filtros.avisoFechas}
-        </p>
-      )}
+      {filtros.avisoFechas && <Aviso tono="alerta">{filtros.avisoFechas}</Aviso>}
 
-      <p role="status" className="flex flex-wrap gap-x-6 gap-y-1 rounded-xl bg-rose-50 px-4 py-3 text-rose-900">
+      <p role="status" className="flex flex-wrap items-baseline gap-x-8 gap-y-1 px-1 text-arena-600">
         <span>
-          <strong className="text-lg">{totales.registros}</strong> {totales.registros === 1 ? "registro" : "registros"}
+          <strong className="cifra text-2xl font-semibold text-arena-900">{totales.registros}</strong>{" "}
+          {totales.registros === 1 ? "registro" : "registros"}
         </span>
         <span>
-          <strong className="text-lg">{formatoPesos(totales.costoCentavos)}</strong> en mermas
-          {filtros.estado !== "activos" && " (sin cancelados)"}
+          <strong className="cifra text-2xl font-semibold text-frambuesa-700">{formatoPesos(totales.costoCentavos)}</strong>{" "}
+          en mermas{filtros.estado !== "activos" && " (sin cancelados)"}
         </span>
       </p>
 
@@ -111,7 +125,7 @@ function SelectorSucursal({ sucursales, actual }: { sucursales: Opcion[]; actual
       <label htmlFor="sucursal" className="sr-only">
         Sucursal
       </label>
-      <select id="sucursal" name="sucursal" defaultValue={actual ?? ""} className="campo" required>
+      <select id="sucursal" name="sucursal" defaultValue={actual ?? ""} className="campo min-w-56" required>
         <option value="">Selecciona una sucursal…</option>
         {sucursales.map((s) => (
           <option key={s.id} value={s.id}>
@@ -119,19 +133,16 @@ function SelectorSucursal({ sucursales, actual }: { sucursales: Opcion[]; actual
           </option>
         ))}
       </select>
-      <button className="boton-primario py-2">Ver</button>
+      <button className={estiloBoton({ variante: "secundario" })}>Ver</button>
     </form>
   );
 }
 
 function Fecha({ etiqueta, nombre, valor }: { etiqueta: string; nombre: string; valor?: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={`filtro-${nombre}`} className="text-sm font-medium">
-        {etiqueta}
-      </label>
+    <Campo id={`filtro-${nombre}`} etiqueta={etiqueta}>
       <input id={`filtro-${nombre}`} type="date" name={nombre} defaultValue={valor} className="campo" />
-    </div>
+    </Campo>
   );
 }
 
@@ -145,10 +156,7 @@ type SelectorProps = {
 
 function Selector({ etiqueta, nombre, valor, opciones, vacio = "Todos" }: SelectorProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={`filtro-${nombre}`} className="text-sm font-medium">
-        {etiqueta}
-      </label>
+    <Campo id={`filtro-${nombre}`} etiqueta={etiqueta}>
       <select id={`filtro-${nombre}`} name={nombre} defaultValue={valor ?? ""} className="campo">
         {vacio !== null && <option value="">{vacio}</option>}
         {opciones.map((o) => (
@@ -157,6 +165,6 @@ function Selector({ etiqueta, nombre, valor, opciones, vacio = "Todos" }: Select
           </option>
         ))}
       </select>
-    </div>
+    </Campo>
   );
 }

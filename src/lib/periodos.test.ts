@@ -1,5 +1,17 @@
 import { describe, expect, test } from "vitest";
-import { crearPeriodo, desplazar, esFechaValida, etiquetaPeriodo, fechaLocal, inicioDelDia, rangoDeFechas } from "./periodos";
+import {
+  crearPeriodo,
+  desplazar,
+  esFechaValida,
+  etiquetaPeriodo,
+  fechaLocal,
+  inicioDelDia,
+  leerPeriodo,
+  rangoDeFechas,
+  saludo,
+  ultimoDia,
+  variacion,
+} from "./periodos";
 
 const utc = (iso: string) => Date.parse(iso);
 
@@ -63,5 +75,29 @@ describe("esFechaValida", () => {
   test("rechaza inexistentes o mal formadas", () => {
     expect(esFechaValida("2026-02-30")).toBe(false);
     expect(esFechaValida("11/11/2026")).toBe(false);
+  });
+});
+
+describe("leerPeriodo", () => {
+  const ahora = Date.parse("2026-11-11T18:00:00Z");
+  test("por defecto, el mes actual", () => expect(leerPeriodo(undefined, undefined, ahora).inicio).toBe("2026-11-01"));
+  test("valores inválidos caen al mes actual", () => {
+    const p = leerPeriodo("anio", "2026-13-01", ahora);
+    expect([p.tipo, p.inicio]).toEqual(["mes", "2026-11-01"]);
+  });
+  test("semana pedida", () => expect(leerPeriodo("semana", "2026-11-11", ahora).inicio).toBe("2026-11-09"));
+  test("último día", () => expect(ultimoDia(crearPeriodo("mes", "2026-02-10"))).toBe("2026-02-28"));
+});
+
+describe("variacion y saludo", () => {
+  test("variación porcentual", () => {
+    expect(variacion(150, 100)).toBe(50);
+    expect(variacion(50, 100)).toBe(-50);
+    expect(variacion(10, 0)).toBeNull();
+  });
+  test("saludo por hora de Monterrey", () => {
+    expect(saludo(Date.parse("2026-11-11T15:00:00Z"))).toBe("Buenos días"); // 09:00
+    expect(saludo(Date.parse("2026-11-11T21:00:00Z"))).toBe("Buenas tardes"); // 15:00
+    expect(saludo(Date.parse("2026-11-12T03:00:00Z"))).toBe("Buenas noches"); // 21:00
   });
 });

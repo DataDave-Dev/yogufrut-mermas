@@ -1,47 +1,22 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
 import { salir } from "@/app/login/actions";
-import { requireUsuario, ROLES_REGISTRO, type Rol } from "@/lib/auth";
+import { AppShell } from "@/components/sidebar/AppShell";
+import { COOKIE_SIDEBAR, menuPara } from "@/components/sidebar/menu";
+import { requireUsuario } from "@/lib/auth";
 import { PUESTOS } from "@/lib/formato";
-
-// Menú según rol. Ocultarlo es solo comodidad: cada página y acción valida el rol en el servidor.
-const MENU: { href: string; texto: string; roles: readonly Rol[] }[] = [
-  { href: "/", texto: "Registrar merma", roles: ROLES_REGISTRO },
-  { href: "/mis-registros", texto: "Mis registros", roles: ROLES_REGISTRO },
-  { href: "/sucursal", texto: "Historial", roles: ["encargado", "gerente", "admin"] },
-  { href: "/usuarios", texto: "Usuarios", roles: ["gerente", "admin"] },
-  { href: "/admin/sucursales", texto: "Sucursales", roles: ["admin"] },
-  { href: "/admin/productos", texto: "Productos", roles: ["admin"] },
-  { href: "/admin/motivos", texto: "Motivos", roles: ["admin"] },
-];
 
 export default async function LayoutApp({ children }: LayoutProps<"/">) {
   const usuario = await requireUsuario();
-  const menu = MENU.filter((m) => m.roles.includes(usuario.rol));
+  const colapsado = (await cookies()).get(COOKIE_SIDEBAR)?.value === "colapsado";
 
   return (
-    <>
-      <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <div>
-            <p className="font-semibold">{usuario.nombreCompleto}</p>
-            <p className="text-sm text-stone-500">
-              {PUESTOS[usuario.rol]}
-              {usuario.sucursalNombre && <> · {usuario.sucursalNombre}</>}
-            </p>
-          </div>
-          <form action={salir}>
-            <button className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100">Cerrar sesión</button>
-          </form>
-        </div>
-        <nav aria-label="Principal" className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-4 whitespace-nowrap">
-          {menu.map((m) => (
-            <Link key={m.href} href={m.href} className="rounded-t-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900">
-              {m.texto}
-            </Link>
-          ))}
-        </nav>
-      </header>
-      <main className="mx-auto w-full max-w-3xl flex-1 p-4">{children}</main>
-    </>
+    <AppShell
+      menu={menuPara(usuario.rol)}
+      usuario={{ nombre: usuario.nombreCompleto, puesto: PUESTOS[usuario.rol], sucursal: usuario.sucursalNombre }}
+      colapsadoInicial={colapsado}
+      salir={salir}
+    >
+      {children}
+    </AppShell>
   );
 }

@@ -31,7 +31,7 @@ async function guardar(operacion: () => Promise<unknown>, ok: string): Promise<R
     throw e;
   }
   revalidatePath("/admin/productos");
-  revalidatePath("/");
+  revalidatePath("/registrar");
   return { ok };
 }
 

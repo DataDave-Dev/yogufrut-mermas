@@ -10,13 +10,13 @@
 
 ## 2. Fase 2 — Panel de reportes: elegir periodo → indicadores y rankings
 
-- [ ] 2.1 `obtenerReporte(sucursalId, periodo)`: totales, productos (costo, registros, cantidad), motivos, empleados y desglose por día, sin cancelados
-- [ ] 2.2 Pantalla `/reportes`: selector día/semana/mes, navegación anterior/siguiente, tarjetas de totales, rankings y desglose por día con barras CSS; estado sin registros
-- [ ] 2.3 Enlaces de rankings al historial filtrado por producto/motivo/usuario y periodo
-- [ ] 2.4 Resumen general `/reportes/general` (admin): sucursales del periodo ordenadas por costo, total general y acceso al panel de cada una
-- [ ] 2.5 Menú "Reportes" según rol (admin al resumen general)
-- [ ] 2.6 Pruebas unitarias de agregados con base de pruebas; E2E: gerente ve panel del mes con rankings correctos y cancelados excluidos; admin ve resumen general
-- [ ] 2.7 Verificación manual: registrar mermas de varios productos, cancelar una, revisar que el panel del día, semana y mes cuadre con el historial
+- [x] 2.1 `obtenerReporte(sucursalId, periodo)`: totales, productos (costo, registros, cantidad), motivos, empleados y desglose por día, sin cancelados
+- [x] 2.2 Pantalla `/reportes`: selector día/semana/mes, navegación anterior/siguiente, tarjetas de totales, rankings y desglose por día con barras CSS; estado sin registros
+- [x] 2.3 Enlaces de rankings al historial filtrado por producto/motivo/usuario y periodo
+- [x] 2.4 Resumen general `/reportes/general` (admin): sucursales del periodo ordenadas por costo, total general y acceso al panel de cada una
+- [x] 2.5 Menú "Reportes" según rol (admin al resumen general)
+- [x] 2.6 Pruebas unitarias de agregados con base de pruebas; E2E: gerente ve panel del mes con rankings correctos y cancelados excluidos; admin ve resumen general
+- [x] 2.7 Verificación manual: registrar mermas de varios productos, cancelar una, revisar que el panel del día, semana y mes cuadre con el historial
 
 ## 3. Fase 3 — Exportación: Excel y PDF del periodo
 

@@ -10,12 +10,31 @@ export async function entrar(page: Page, usuario: string, password = PASSWORD) {
   if (password === PASSWORD) await expect(page).not.toHaveURL(/\/login/);
 }
 
+/** Abre el cajón del menú si está cerrado (celular); en escritorio el sidebar ya está visible. */
+async function abrirMenuSiHaceFalta(page: Page) {
+  const abrir = page.getByRole("button", { name: "Abrir menú" });
+  if (await abrir.isVisible()) await abrir.click();
+}
+
+/** Navega con el menú lateral. */
+export async function navegar(page: Page, texto: string) {
+  await abrirMenuSiHaceFalta(page);
+  const enlace = page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: texto, exact: true });
+  await enlace.click();
+  await expect(enlace).toHaveAttribute("aria-current", "page");
+}
+
 export async function salir(page: Page) {
+  await abrirMenuSiHaceFalta(page);
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
   await expect(page).toHaveURL(/\/login$/);
 }
 
+/** Elementos de lista del contenido (sin los del menú lateral). */
+export const filas = (page: Page) => page.getByRole("main").getByRole("listitem");
+
 export async function llenarMerma(page: Page, producto: string, cantidad: string, motivo: string) {
+  if (!page.url().endsWith("/registrar")) await page.goto("/registrar");
   await page.getByLabel("Producto", { exact: true }).selectOption({ label: producto });
   await page.getByLabel("Cantidad", { exact: true }).fill(cantidad);
   await page.getByLabel("Motivo", { exact: true }).selectOption({ label: motivo });

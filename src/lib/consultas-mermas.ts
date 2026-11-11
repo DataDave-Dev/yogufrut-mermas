@@ -59,7 +59,8 @@ export async function listarMermas(filtro: SQL, pagina = 1) {
 }
 
 export type FiltroHistorial = {
-  sucursalId: number;
+  /** Sin sucursal: todas (solo para el administrador). */
+  sucursalId?: number;
   desde?: number;
   hasta?: number;
   productoId?: number;
@@ -68,10 +69,10 @@ export type FiltroHistorial = {
   estado: "activos" | "cancelados" | "todos";
 };
 
-/** Condición SQL del historial: siempre limitada a una sucursal. */
+/** Condición SQL del historial. Quien llama decide la sucursal según el rol del usuario. */
 export function condicionHistorial(f: FiltroHistorial): SQL {
   return and(
-    eq(mermas.sucursalId, f.sucursalId),
+    f.sucursalId ? eq(mermas.sucursalId, f.sucursalId) : undefined,
     f.desde !== undefined ? gte(mermas.creadaEn, new Date(f.desde)) : undefined,
     f.hasta !== undefined ? lt(mermas.creadaEn, new Date(f.hasta)) : undefined,
     f.productoId ? eq(mermas.productoId, f.productoId) : undefined,

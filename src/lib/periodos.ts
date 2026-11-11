@@ -105,3 +105,31 @@ export function etiquetaPeriodo(periodo: Periodo): string {
   const [a, m] = periodo.inicio.split("-").map(Number);
   return `${MESES[m - 1]} ${a}`;
 }
+
+/** Último día local del periodo (inclusivo), para filtros "hasta". */
+export const ultimoDia = (periodo: Periodo): string => sumarDias(periodo.fin, -1);
+
+/** Periodo desde parámetros de URL; lo inválido cae en el mes actual. */
+export function leerPeriodo(tipo: unknown, fecha: unknown, ahora = Date.now()): Periodo {
+  const t = TIPOS_PERIODO.includes(tipo as TipoPeriodo) ? (tipo as TipoPeriodo) : "mes";
+  const f = typeof fecha === "string" && esFechaValida(fecha) ? fecha : fechaLocal(ahora);
+  return crearPeriodo(t, f);
+}
+
+/** Variación porcentual respecto al periodo anterior; null si antes no hubo nada con qué comparar. */
+export function variacion(actual: number, anterior: number): number | null {
+  return anterior === 0 ? null : ((actual - anterior) / anterior) * 100;
+}
+
+/** "Buenos días", "Buenas tardes" o "Buenas noches" según la hora local. */
+export function saludo(ahora = Date.now()): string {
+  const hora = Number(new Intl.DateTimeFormat("en-US", { timeZone: ZONA, hour: "numeric", hourCycle: "h23" }).format(ahora));
+  return hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
+}
+
+/** Fecha local de hoy "AAAA-MM-DD". */
+export const hoyLocal = (): string => fechaLocal(Date.now());
+
+/** "miércoles, 11 de noviembre" en la zona de las sucursales. */
+export const fechaLarga = (ms = Date.now()): string =>
+  new Intl.DateTimeFormat("es-MX", { timeZone: ZONA, weekday: "long", day: "numeric", month: "long" }).format(ms);
