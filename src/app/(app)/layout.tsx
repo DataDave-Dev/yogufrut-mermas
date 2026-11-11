@@ -7,8 +7,7 @@ import { PUESTOS } from "@/lib/formato";
 const MENU: { href: string; texto: string; roles: readonly Rol[] }[] = [
   { href: "/", texto: "Registrar merma", roles: ROLES_REGISTRO },
   { href: "/mis-registros", texto: "Mis registros", roles: ROLES_REGISTRO },
-  { href: "/sucursal", texto: "Registros de la sucursal", roles: ["gerente"] },
-  { href: "/sucursal", texto: "Registros por sucursal", roles: ["admin"] },
+  { href: "/sucursal", texto: "Historial", roles: ["encargado", "gerente", "admin"] },
   { href: "/usuarios", texto: "Usuarios", roles: ["gerente", "admin"] },
   { href: "/admin/sucursales", texto: "Sucursales", roles: ["admin"] },
   { href: "/admin/productos", texto: "Productos", roles: ["admin"] },

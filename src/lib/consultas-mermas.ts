@@ -1,5 +1,5 @@
 import "server-only";
-import { desc, eq, sql, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, isNull, lt, sql, sum, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { db } from "@/db";
 import { fotosMerma, mermas, motivos, productos, sucursales, usuarios } from "@/db/schema";
@@ -56,4 +56,39 @@ export async function listarMermas(filtro: SQL, pagina = 1) {
     .limit(POR_PAGINA + 1)
     .offset((pagina - 1) * POR_PAGINA);
   return { filas: filas.slice(0, POR_PAGINA), haySiguiente: filas.length > POR_PAGINA };
+}
+
+export type FiltroHistorial = {
+  sucursalId: number;
+  desde?: number;
+  hasta?: number;
+  productoId?: number;
+  motivoId?: number;
+  usuarioId?: number;
+  estado: "activos" | "cancelados" | "todos";
+};
+
+/** Condición SQL del historial: siempre limitada a una sucursal. */
+export function condicionHistorial(f: FiltroHistorial): SQL {
+  return and(
+    eq(mermas.sucursalId, f.sucursalId),
+    f.desde !== undefined ? gte(mermas.creadaEn, new Date(f.desde)) : undefined,
+    f.hasta !== undefined ? lt(mermas.creadaEn, new Date(f.hasta)) : undefined,
+    f.productoId ? eq(mermas.productoId, f.productoId) : undefined,
+    f.motivoId ? eq(mermas.motivoId, f.motivoId) : undefined,
+    f.usuarioId ? eq(mermas.usuarioId, f.usuarioId) : undefined,
+    f.estado === "activos" ? isNull(mermas.canceladaEn) : f.estado === "cancelados" ? isNotNull(mermas.canceladaEn) : undefined,
+  )!;
+}
+
+/** Totales de todo el resultado (no solo la página). El costo excluye cancelados. */
+export async function totalesMermas(condicion: SQL) {
+  const [fila] = await db
+    .select({
+      registros: count(),
+      costoCentavos: sum(sql`case when ${mermas.canceladaEn} is null then ${mermas.costoTotalCentavos} else 0 end`).mapWith(Number),
+    })
+    .from(mermas)
+    .where(condicion);
+  return { registros: fila?.registros ?? 0, costoCentavos: fila?.costoCentavos ?? 0 };
 }

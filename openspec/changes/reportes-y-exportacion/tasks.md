@@ -1,11 +1,11 @@
 ## 1. Fase 1 — Historial con filtros: filtrar → ver registros y totales → detalle
 
-- [ ] 1.1 Módulo `periodos.ts` (rango de fechas locales a ms UTC en America/Monterrey; día, semana lun–dom, mes; anterior/siguiente) con pruebas unitarias
-- [ ] 1.2 Permisos `puedeVerReportes` y `puedeExportar` en `permisos.ts` con pruebas; menú "Historial" para encargado, gerente y admin
-- [ ] 1.3 Validación de filtros desde la URL con Zod (desde, hasta, producto, motivo, usuario, estado, página; sucursal solo admin) y aviso de fechas invertidas
-- [ ] 1.4 Consulta del historial con filtros combinados, paginación y totales del resultado completo (registros y costo sin cancelados)
-- [ ] 1.5 Pantalla `/sucursal` como historial: formulario de filtros GET, totales, lista con enlace al detalle; usuario limitado a la sucursal
-- [ ] 1.6 E2E: encargado filtra por motivo y fechas, ve totales y abre un detalle; empleado recibe acceso denegado; gerente no ve otra sucursal por URL
+- [x] 1.1 Módulo `periodos.ts` (rango de fechas locales a ms UTC en America/Monterrey; día, semana lun–dom, mes; anterior/siguiente) con pruebas unitarias
+- [x] 1.2 Permisos `puedeVerReportes` y `puedeExportar` en `permisos.ts` con pruebas; menú "Historial" para encargado, gerente y admin
+- [x] 1.3 Validación de filtros desde la URL con Zod (desde, hasta, producto, motivo, usuario, estado, página; sucursal solo admin) y aviso de fechas invertidas
+- [x] 1.4 Consulta del historial con filtros combinados, paginación y totales del resultado completo (registros y costo sin cancelados)
+- [x] 1.5 Pantalla `/sucursal` como historial: formulario de filtros GET, totales, lista con enlace al detalle; usuario limitado a la sucursal
+- [x] 1.6 E2E: encargado filtra por motivo y fechas, ve totales y abre un detalle; empleado recibe acceso denegado; gerente no ve otra sucursal por URL
 - [ ] 1.7 Verificación manual: como gerente filtrar por producto y por usuario, comprobar totales y que la URL filtrada se puede recargar
 
 ## 2. Fase 2 — Panel de reportes: elegir periodo → indicadores y rankings

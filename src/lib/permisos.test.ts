@@ -1,5 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { puedeCancelarMerma, puedeGestionarUsuario, puedeVerMerma, rolesAsignables } from "./permisos";
+import {
+  puedeCancelarMerma,
+  puedeExportar,
+  puedeGestionarUsuario,
+  puedeVerMerma,
+  puedeVerReportes,
+  rolesAsignables,
+} from "./permisos";
 
 const merma = { usuarioId: 10, sucursalId: 1 };
 const usuario = (rol: "empleado" | "encargado" | "gerente" | "admin", sucursalId: number | null, id = 99) => ({
@@ -19,6 +26,10 @@ describe("puedeCancelarMerma", () => {
 describe("puedeVerMerma", () => {
   test("autor", () => expect(puedeVerMerma(usuario("empleado", 1, 10), merma)).toBe(true));
   test("otro empleado de la sucursal no", () => expect(puedeVerMerma(usuario("empleado", 1), merma)).toBe(false));
+  test("encargado de la sucursal sí, de otra no", () => {
+    expect(puedeVerMerma(usuario("encargado", 1), merma)).toBe(true);
+    expect(puedeVerMerma(usuario("encargado", 2), merma)).toBe(false);
+  });
   test("gerente de la sucursal", () => expect(puedeVerMerma(usuario("gerente", 1), merma)).toBe(true));
   test("gerente de otra sucursal no", () => expect(puedeVerMerma(usuario("gerente", 2), merma)).toBe(false));
 });
@@ -44,5 +55,21 @@ describe("gestión de usuarios", () => {
   });
   test("admin gestiona a cualquiera", () => {
     expect(puedeGestionarUsuario(usuario("admin", null), { rol: "gerente", sucursalId: 3 })).toBe(true);
+  });
+});
+
+describe("reportes", () => {
+  test("historial y panel: encargado, gerente y admin", () => {
+    expect(["empleado", "encargado", "gerente", "admin"].map((r) => puedeVerReportes(r as never))).toEqual([
+      false,
+      true,
+      true,
+      true,
+    ]);
+  });
+  test("exportar: gerente y admin", () => {
+    expect(puedeExportar("encargado")).toBe(false);
+    expect(puedeExportar("gerente")).toBe(true);
+    expect(puedeExportar("admin")).toBe(true);
   });
 });

@@ -37,7 +37,7 @@ test("foto, aviso de duplicado y cancelación por el gerente", async ({ page }, 
 
   // Gerente ve los registros de su sucursal con el nombre de quien registró.
   await entrar(page, "gerente");
-  await page.getByRole("link", { name: "Registros de la sucursal" }).click();
+  await page.getByRole("link", { name: "Historial" }).click();
   const conFoto = page.getByRole("listitem").filter({ hasText: registro }).filter({ hasText: "📷" });
   await expect(conFoto).toContainText("Ana López");
 
@@ -54,7 +54,7 @@ test("foto, aviso de duplicado y cancelación por el gerente", async ({ page }, 
   const urlDetalle = page.url();
   await salir(page);
 
-  // El empleado lo ve cancelado; otro usuario de la sucursal no puede abrir el detalle ni la foto.
+  // El empleado lo ve cancelado; el encargado ve el detalle pero no puede cancelar.
   await entrar(page, "empleado");
   await page.goto("/mis-registros");
   await expect(page.getByRole("listitem").filter({ hasText: registro }).filter({ hasText: "Cancelado" })).toHaveCount(1);
@@ -64,14 +64,18 @@ test("foto, aviso de duplicado y cancelación por el gerente", async ({ page }, 
 
   await entrar(page, "encargado");
   await page.goto(urlDetalle);
-  await expect(page.getByRole("heading", { name: "No encontrado" })).toBeVisible();
-  const respuestaFoto = await page.request.get(`${urlDetalle}/foto`);
-  expect(respuestaFoto.status()).toBe(404);
+  await expect(page.getByText(/Cancelado por Laura Martínez/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Cancelar registro" })).toBeHidden();
+  expect((await page.request.get(`${urlDetalle}/foto`)).status()).toBe(200);
+  await salir(page);
+
+  // Sin sesión, la foto no se entrega.
+  expect((await page.request.get(`${urlDetalle}/foto`)).status()).toBe(401);
 });
 
 test("empleado no accede a registros de la sucursal", async ({ page }) => {
   await entrar(page, "empleado");
-  await expect(page.getByRole("link", { name: "Registros de la sucursal" })).toBeHidden();
+  await expect(page.getByRole("link", { name: "Historial" })).toBeHidden();
   await page.goto("/sucursal");
   await expect(page.getByRole("heading", { name: "Acceso denegado" })).toBeVisible();
 });
@@ -91,10 +95,10 @@ test("archivo que no es imagen se rechaza", async ({ page }) => {
 
 test("administrador elige la sucursal a revisar", async ({ page }) => {
   await entrar(page, "admin");
-  await page.getByRole("link", { name: "Registros por sucursal" }).click();
+  await page.getByRole("link", { name: "Historial" }).click();
   await page.getByLabel("Sucursal").selectOption({ label: "Sucursal Sendero" });
   await page.getByRole("button", { name: "Ver" }).click();
-  await expect(page.getByRole("heading", { name: "Registros de Sucursal Sendero" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Historial de Sucursal Sendero" })).toBeVisible();
   await expect(page.getByRole("listitem").first()).toBeVisible();
 });
 
