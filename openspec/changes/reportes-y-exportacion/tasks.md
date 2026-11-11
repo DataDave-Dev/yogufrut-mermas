@@ -6,7 +6,7 @@
 - [x] 1.4 Consulta del historial con filtros combinados, paginación y totales del resultado completo (registros y costo sin cancelados)
 - [x] 1.5 Pantalla `/sucursal` como historial: formulario de filtros GET, totales, lista con enlace al detalle; usuario limitado a la sucursal
 - [x] 1.6 E2E: encargado filtra por motivo y fechas, ve totales y abre un detalle; empleado recibe acceso denegado; gerente no ve otra sucursal por URL
-- [ ] 1.7 Verificación manual: como gerente filtrar por producto y por usuario, comprobar totales y que la URL filtrada se puede recargar
+- [x] 1.7 Verificación manual: como gerente filtrar por producto y por usuario, comprobar totales y que la URL filtrada se puede recargar
 
 ## 2. Fase 2 — Panel de reportes: elegir periodo → indicadores y rankings
 
