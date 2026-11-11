@@ -10,7 +10,7 @@
 - [x] 1.8 Server Action que guarda la merma con sucursal, usuario, fecha y costo tomados de la sesión y del catálogo; `clave_envio` única contra doble clic; confirmación con costo calculado
 - [x] 1.9 Pantalla "Mis registros": lista de las mermas del usuario, más reciente primero, con fecha/hora en `America/Monterrey`
 - [x] 1.10 Pruebas unitarias de expiración de sesión y cálculo de costo; prueba E2E del flujo login → registrar → ver en Mis registros
-- [ ] 1.11 Verificación manual: entrar como empleado de Sucursal Sendero, registrar 3 L de "Base de yogurt de fresa" por "Caducidad", verla en Mis registros con su costo; un usuario con contraseña incorrecta no entra
+- [x] 1.11 Verificación manual: entrar como empleado de Sucursal Sendero, registrar 3 L de "Base de yogurt de fresa" por "Caducidad", verla en Mis registros con su costo; un usuario con contraseña incorrecta no entra
 
 ## 2. Fase 2 — Registro completo: foto, duplicados y cancelación
 

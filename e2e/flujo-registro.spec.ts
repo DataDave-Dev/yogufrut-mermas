@@ -13,6 +13,7 @@ test("contraseña incorrecta no entra", async ({ page }) => {
   await entrar(page, "empleado", "incorrecta");
   await expect(page.getByText("Usuario o contraseña incorrectos")).toBeVisible();
   await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByLabel("Usuario")).toHaveValue("empleado");
 });
 
 test("sin sesión redirige al login", async ({ page }) => {
@@ -36,6 +37,8 @@ test("empleado registra una merma y la ve en Mis registros", async ({ page }, in
 
   await expect(page.getByRole("status")).toContainText(costo);
   await expect(page.getByLabel("Cantidad", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Producto", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Unidad de medida")).toHaveText("—");
 
   await page.getByRole("link", { name: "Mis registros" }).click();
   const registro = page.getByRole("listitem").filter({ hasText: `Base de yogurt de fresa · ${cantidad} L` });
@@ -55,4 +58,9 @@ test("cantidad inválida no se guarda", async ({ page }) => {
   await page.getByLabel("Motivo", { exact: true }).selectOption({ label: "Derrame" });
   await page.getByRole("button", { name: "Guardar merma" }).click();
   await expect(page.getByText("La cantidad debe ser mayor a 0")).toBeVisible();
+  // Lo capturado se conserva para corregir solo la cantidad.
+  await expect(page.getByLabel("Cantidad", { exact: true })).toHaveValue("0");
+  await expect(page.getByLabel("Producto", { exact: true }).locator("option:checked")).toHaveText("Leche entera");
+  await expect(page.getByLabel("Unidad de medida")).toHaveText("L");
+  await expect(page.getByLabel("Motivo", { exact: true }).locator("option:checked")).toHaveText("Derrame");
 });

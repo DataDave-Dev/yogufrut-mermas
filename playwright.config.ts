@@ -18,6 +18,6 @@ export default defineConfig({
     url: `http://localhost:${PUERTO}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { DATABASE_URL: process.env.DATABASE_URL_TEST! },
+    env: { DATABASE_URL: process.env.DATABASE_URL_TEST!, NEXT_DIST_DIR: ".next-e2e" },
   },
 });

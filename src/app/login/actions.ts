@@ -17,9 +17,12 @@ const ERROR = "Usuario o contraseña incorrectos";
 // Hash real de referencia: el tiempo de respuesta no revela si el usuario existe.
 let hashFalso: Promise<string> | undefined;
 
-export async function iniciarSesion(_previo: string | null, formData: FormData): Promise<string | null> {
+export type EstadoLogin = { error?: string; usuario?: string };
+
+export async function iniciarSesion(_previo: EstadoLogin, formData: FormData): Promise<EstadoLogin> {
+  const usuarioEscrito = String(formData.get("usuario") ?? "").slice(0, 50);
   const datos = esquema.safeParse(Object.fromEntries(formData));
-  if (!datos.success) return ERROR;
+  if (!datos.success) return { error: ERROR, usuario: usuarioEscrito };
 
   const [usuario] = await db
     .select({ id: usuarios.id, passwordHash: usuarios.passwordHash })
@@ -34,7 +37,7 @@ export async function iniciarSesion(_previo: string | null, formData: FormData):
     );
 
   const valido = await verify(usuario?.passwordHash ?? (await (hashFalso ??= hash("sin-usuario"))), datos.data.password).catch(() => false);
-  if (!usuario || !valido) return ERROR;
+  if (!usuario || !valido) return { error: ERROR, usuario: usuarioEscrito };
 
   await crearSesion(usuario.id);
   redirect("/");

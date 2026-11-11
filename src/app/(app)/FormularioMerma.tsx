@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
-import type { ReactNode } from "react";
+import { startTransition, useActionState, useId, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { formatoCantidad, formatoPesos } from "@/lib/formato";
 import { registrarMerma, type EstadoRegistro } from "./actions";
 
@@ -11,10 +11,14 @@ type Props = { productos: Producto[]; motivos: Motivo[]; claveEnvio: string };
 
 export function FormularioMerma({ productos, motivos, claveEnvio }: Props) {
   const [estado, accion, enviando] = useActionState<EstadoRegistro, FormData>(registrarMerma, { claveEnvio });
-  const [productoId, setProductoId] = useState("");
-  const unidad = productos.find((p) => String(p.id) === productoId)?.unidad ?? "—";
-  const categorias = [...Map.groupBy(productos, (p) => p.categoria)];
-  const e = estado.errores ?? {};
+
+  // ponytail: envío manual en vez de <form action>, porque React 19 vacía el formulario tras
+  // cada envío y se perdería lo capturado cuando hay errores. Requiere JavaScript (navegadores objetivo lo tienen).
+  function handleSubmit(ev: FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    const datos = new FormData(ev.currentTarget);
+    startTransition(() => accion(datos));
+  }
 
   return (
     <>
@@ -24,67 +28,83 @@ export function FormularioMerma({ productos, motivos, claveEnvio }: Props) {
           <strong>{formatoPesos(estado.exito.costoTotal)}</strong>
         </p>
       )}
-      {/* key: tras guardar, el formulario se reinicia con una clave de envío nueva */}
-      <form key={estado.claveEnvio} action={accion} className="flex flex-col gap-4">
+      {/* key: tras guardar, el formulario (y su estado) se reinicia con una clave de envío nueva */}
+      <form key={estado.claveEnvio} onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input type="hidden" name="claveEnvio" value={estado.claveEnvio} />
-
-        <Campo etiqueta="Producto" error={e.productoId}>
-          {(id) => (
-            // ponytail: <select> nativo con grupos y búsqueda tecleando; buscador propio si 78 productos resultan lentos.
-            <select
-              id={id}
-              name="productoId"
-              required
-              className="campo"
-              value={productoId}
-              onChange={(ev) => setProductoId(ev.target.value)}
-            >
-              <option value="">Selecciona un producto…</option>
-              {categorias.map(([categoria, lista]) => (
-                <optgroup key={categoria} label={categoria}>
-                  {lista.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          )}
-        </Campo>
-
-        <Campo etiqueta="Cantidad" error={e.cantidad}>
-          {(id) => (
-            <div className="flex items-center gap-2">
-              <input id={id} name="cantidad" inputMode="decimal" required placeholder="0" className="campo" />
-              <span className="w-10 text-stone-500" aria-label="Unidad de medida">
-                {unidad}
-              </span>
-            </div>
-          )}
-        </Campo>
-
-        <Campo etiqueta="Motivo" error={e.motivoId}>
-          {(id) => (
-            <select id={id} name="motivoId" required className="campo" defaultValue="">
-              <option value="">Selecciona un motivo…</option>
-              {motivos.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
-          )}
-        </Campo>
-
-        <Campo etiqueta="Observaciones (opcional)" error={e.observaciones}>
-          {(id) => <textarea id={id} name="observaciones" maxLength={500} rows={3} className="campo" />}
-        </Campo>
-
+        <CamposMerma productos={productos} motivos={motivos} errores={estado.errores ?? {}} />
         <button disabled={enviando} className="boton-primario">
           {enviando ? "Guardando…" : "Guardar merma"}
         </button>
       </form>
+    </>
+  );
+}
+
+type CamposProps = {
+  productos: Producto[];
+  motivos: Motivo[];
+  errores: NonNullable<EstadoRegistro["errores"]>;
+};
+
+function CamposMerma({ productos, motivos, errores }: CamposProps) {
+  const [productoId, setProductoId] = useState("");
+  const unidad = productos.find((p) => String(p.id) === productoId)?.unidad ?? "—";
+  const categorias = [...Map.groupBy(productos, (p) => p.categoria)];
+
+  return (
+    <>
+      <Campo etiqueta="Producto" error={errores.productoId}>
+        {(id) => (
+          // ponytail: <select> nativo con grupos y búsqueda tecleando; buscador propio si 78 productos resultan lentos.
+          <select
+            id={id}
+            name="productoId"
+            required
+            className="campo"
+            value={productoId}
+            onChange={(ev) => setProductoId(ev.target.value)}
+          >
+            <option value="">Selecciona un producto…</option>
+            {categorias.map(([categoria, lista]) => (
+              <optgroup key={categoria} label={categoria}>
+                {lista.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        )}
+      </Campo>
+
+      <Campo etiqueta="Cantidad" error={errores.cantidad}>
+        {(id) => (
+          <div className="flex items-center gap-2">
+            <input id={id} name="cantidad" inputMode="decimal" required placeholder="0" className="campo" />
+            <span className="w-10 text-stone-500" aria-label="Unidad de medida">
+              {unidad}
+            </span>
+          </div>
+        )}
+      </Campo>
+
+      <Campo etiqueta="Motivo" error={errores.motivoId}>
+        {(id) => (
+          <select id={id} name="motivoId" required className="campo" defaultValue="">
+            <option value="">Selecciona un motivo…</option>
+            {motivos.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}
+              </option>
+            ))}
+          </select>
+        )}
+      </Campo>
+
+      <Campo etiqueta="Observaciones (opcional)" error={errores.observaciones}>
+        {(id) => <textarea id={id} name="observaciones" maxLength={500} rows={3} className="campo" />}
+      </Campo>
     </>
   );
 }
