@@ -73,10 +73,3 @@ Los registros no SHALL editarse ni borrarse. El gerente (para su sucursal) y el 
 - **WHEN** se intenta cancelar un registro ya cancelado
 - **THEN** el sistema lo rechaza
 
-### Requirement: Registros de la sucursal para cancelación
-El gerente SHALL poder ver los registros recientes de su sucursal (más reciente primero, paginados de 50 en 50) para elegir cuál cancelar. El administrador general SHALL elegir primero la sucursal. Esta vista no incluye filtros ni reportes (cambio posterior).
-
-#### Scenario: Gerente ve registros de su sucursal
-- **WHEN** un gerente abre "Registros de la sucursal"
-- **THEN** ve los registros de todos los usuarios de su sucursal con el nombre de quién registró cada uno
-
