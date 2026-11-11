@@ -1,0 +1,79 @@
+categoria,producto,unidad,costo_unitario_mxn
+Base de yogurt,Base de yogurt natural,L,45.00
+Base de yogurt,Base de yogurt griego,L,62.00
+Base de yogurt,Base de yogurt light,L,50.00
+Base de yogurt,Base de yogurt de fresa,L,52.00
+Base de yogurt,Base de yogurt de mango,L,52.00
+Base de yogurt,Base de yogurt de taro,L,58.00
+Base de yogurt,Base de yogurt de chocolate,L,54.00
+Base de yogurt,Base de yogurt de matcha,L,65.00
+Base de yogurt,Base de yogurt vegano (coco),L,70.00
+Lácteos,Leche entera,L,28.00
+Lácteos,Leche deslactosada,L,32.00
+Lácteos,Leche de almendra,L,55.00
+Lácteos,Leche de avena,L,50.00
+Lácteos,Crema para batir,L,85.00
+Lácteos,Leche condensada,kg,75.00
+Lácteos,Queso crema,kg,140.00
+Fruta,Fresa,kg,70.00
+Fruta,Plátano,kg,25.00
+Fruta,Mango,kg,40.00
+Fruta,Kiwi,kg,90.00
+Fruta,Piña,kg,30.00
+Fruta,Durazno,kg,55.00
+Fruta,Zarzamora,kg,160.00
+Fruta,Mora azul (blueberry),kg,180.00
+Fruta,Frambuesa,kg,200.00
+Fruta,Uva,kg,60.00
+Fruta,Manzana,kg,45.00
+Fruta,Melón,kg,25.00
+Fruta,Sandía,kg,18.00
+Fruta,Papaya,kg,25.00
+Fruta,Coco rallado,kg,120.00
+Fruta congelada,Fresa congelada,kg,80.00
+Fruta congelada,Mango congelado,kg,75.00
+Fruta congelada,Mix de frutos rojos congelado,kg,140.00
+Toppings secos,Granola,kg,110.00
+Toppings secos,Almendra fileteada,kg,280.00
+Toppings secos,Nuez,kg,320.00
+Toppings secos,Cacahuate,kg,90.00
+Toppings secos,Chispas de chocolate,kg,150.00
+Toppings secos,Chispas de colores,kg,120.00
+Toppings secos,Galleta Oreo triturada,kg,140.00
+Toppings secos,Galleta María triturada,kg,70.00
+Toppings secos,Cereal (hojuelas/aritos),kg,110.00
+Toppings secos,Gomitas,kg,95.00
+Toppings secos,Mini malvaviscos,kg,100.00
+Toppings secos,Chocolate confitado,kg,180.00
+Toppings secos,Amaranto,kg,90.00
+Toppings secos,Semillas de chía,kg,130.00
+Jarabes y salsas,Miel de abeja,kg,160.00
+Jarabes y salsas,Jarabe de chocolate,L,110.00
+Jarabes y salsas,Jarabe de fresa,L,95.00
+Jarabes y salsas,Cajeta,kg,120.00
+Jarabes y salsas,Lechera (topping),kg,75.00
+Jarabes y salsas,Crema de avellana,kg,260.00
+Jarabes y salsas,Crema de cacahuate,kg,150.00
+Jarabes y salsas,Chamoy,L,60.00
+Jarabes y salsas,Mermelada de frutos rojos,kg,120.00
+Bebidas,Smoothie preparado,L,60.00
+Bebidas,Frappé preparado,L,70.00
+Bebidas,Hielo,kg,6.00
+Bebidas,Café molido,kg,350.00
+Bebidas,Concentrado de té matcha,kg,900.00
+Bebidas,Agua natural (botella),pz,10.00
+Producto preparado,Yogurt preparado chico,pz,35.00
+Producto preparado,Yogurt preparado mediano,pz,48.00
+Producto preparado,Yogurt preparado grande,pz,62.00
+Producto preparado,Parfait,pz,45.00
+Producto preparado,Bowl de fruta,pz,50.00
+Producto preparado,Waffle,pz,30.00
+Producto preparado,Crepa,pz,32.00
+Desechables,Vaso chico,pz,1.80
+Desechables,Vaso mediano,pz,2.20
+Desechables,Vaso grande,pz,2.80
+Desechables,Tapa domo,pz,1.20
+Desechables,Cuchara,pz,0.40
+Desechables,Popote,pz,0.30
+Desechables,Servilleta,pz,0.10
+Desechables,Bolsa para llevar,pz,1.50
