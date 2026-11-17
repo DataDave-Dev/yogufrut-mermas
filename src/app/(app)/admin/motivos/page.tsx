@@ -1,5 +1,4 @@
 import { asc } from "drizzle-orm";
-import { Editar } from "@/components/Editar";
 import { Estado } from "@/components/Estado";
 import { FormularioAccion } from "@/components/FormularioAccion";
 import { Campo } from "@/components/ui/Campo";
@@ -27,7 +26,7 @@ export default async function Motivos() {
         tituloAlta="Nuevo motivo"
         alta={
           <FormularioAccion accion={crearMotivo} textoBoton="Crear motivo" reiniciar>
-            <Campo id="nuevo-motivo" etiqueta="Motivo">
+            <Campo id="nuevo-motivo" etiqueta="Motivo" className="max-w-md">
               <input id="nuevo-motivo" name="nombre" required maxLength={80} className="campo" placeholder="Ej. Corte de luz" />
             </Campo>
           </FormularioAccion>
@@ -36,12 +35,17 @@ export default async function Motivos() {
         lista={
           <Filas>
             {lista.map((m) => (
-              <Fila key={m.id} inactiva={!m.activo}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className={`font-semibold ${m.activo ? "text-arena-900" : "text-arena-500"}`}>{m.nombre}</p>
-                  <Estado activo={m.activo} />
-                </div>
-                <Editar resumen={`Editar ${m.nombre}`}>
+              <Fila
+                key={m.id}
+                inactiva={!m.activo}
+                editar={m.nombre}
+                resumen={
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className={`font-semibold ${m.activo ? "text-arena-900" : "text-arena-500"}`}>{m.nombre}</p>
+                    <Estado activo={m.activo} />
+                  </div>
+                }
+              >
                   <FormularioAccion accion={renombrarMotivo} textoBoton="Guardar nombre" variante="secundario">
                     <input type="hidden" name="id" value={m.id} />
                     <Campo id={`motivo-${m.id}`} etiqueta="Motivo">
@@ -56,7 +60,6 @@ export default async function Motivos() {
                     <input type="hidden" name="id" value={m.id} />
                     <input type="hidden" name="activo" value={String(!m.activo)} />
                   </FormularioAccion>
-                </Editar>
               </Fila>
             ))}
           </Filas>

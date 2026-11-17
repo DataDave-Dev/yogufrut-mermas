@@ -1,6 +1,6 @@
-import { asc } from "drizzle-orm";
-import { Editar } from "@/components/Editar";
+import { and, asc, eq } from "drizzle-orm";
 import { Estado } from "@/components/Estado";
+import { FiltrosCatalogo, PaginacionCatalogo, SinCoincidencias } from "@/components/FiltrosCatalogo";
 import { FormularioAccion } from "@/components/FormularioAccion";
 import { Campo } from "@/components/ui/Campo";
 import { DisenoAdmin, Fila, Filas } from "@/components/ui/DisenoAdmin";
@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { productos, UNIDADES } from "@/db/schema";
 import { requireUsuario } from "@/lib/auth";
 import { enteroADecimal } from "@/lib/costo";
+import { condicionCatalogo, leerFiltrosCatalogo, rangoPagina } from "@/lib/filtros-catalogo";
 import { formatoPesos } from "@/lib/formato";
 import { cambiarEstadoProducto, crearProducto, editarProducto } from "./actions";
 
@@ -16,11 +17,21 @@ export const metadata = { title: "Productos" };
 
 type Producto = typeof productos.$inferSelect;
 
-export default async function Productos() {
+export default async function Productos({ searchParams }: PageProps<"/admin/productos">) {
   await requireUsuario(["admin"]);
-  const lista = await db.select().from(productos).orderBy(asc(productos.categoria), asc(productos.nombre));
+  const filtros = leerFiltrosCatalogo(await searchParams);
+  const { limite, desplazamiento } = rangoPagina(filtros.pagina);
+  const filtro = and(
+    condicionCatalogo(filtros, [productos.nombre, productos.categoria], productos.activo),
+    filtros.categoria ? eq(productos.categoria, filtros.categoria) : undefined,
+  );
+  const [lista, total, todasCategorias] = await Promise.all([
+    db.select().from(productos).where(filtro).orderBy(asc(productos.categoria), asc(productos.nombre)).limit(limite).offset(desplazamiento),
+    db.$count(productos, filtro),
+    db.selectDistinct({ categoria: productos.categoria }).from(productos).orderBy(asc(productos.categoria)),
+  ]);
   const categorias = [...Map.groupBy(lista, (p) => p.categoria)];
-  const nombresCategorias = categorias.map(([c]) => c);
+  const nombresCategorias = todasCategorias.map((c) => c.categoria);
 
   return (
     <>
@@ -36,23 +47,44 @@ export default async function Productos() {
             <CamposProducto prefijo="nuevo" categorias={nombresCategorias} />
           </FormularioAccion>
         }
-        tituloLista={`${lista.length} productos en ${categorias.length} categorías`}
-        lista={categorias.map(([categoria, items]) => (
+        tituloLista={`${total} ${total === 1 ? "producto" : "productos"}`}
+        lista={
+          <>
+          <FiltrosCatalogo
+            ruta="/admin/productos"
+            filtros={filtros}
+            marcador="Buscar producto…"
+            selectores={[
+              {
+                nombre: "categoria",
+                etiqueta: "Filtrar por categoría",
+                todos: "Todas las categorías",
+                opciones: nombresCategorias.map((c) => ({ id: c, nombre: c })),
+              },
+            ]}
+          />
+          {lista.length === 0 && <SinCoincidencias />}
+          {categorias.map(([categoria, items]) => (
           <div key={categoria}>
             <h3 className="border-t border-arena-100 bg-arena-50 px-5 py-2 text-xs font-semibold tracking-wide text-arena-500 uppercase">
               {categoria}
             </h3>
             <Filas>
               {items.map((p) => (
-                <Fila key={p.id} inactiva={!p.activo}>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className={`font-semibold ${p.activo ? "text-arena-900" : "text-arena-500"}`}>{p.nombre}</p>
-                    <Estado activo={p.activo} />
-                    <p className="cifra ml-auto text-sm text-arena-700">
-                      {formatoPesos(p.costoUnitarioCentavos)} <span className="text-arena-400">/ {p.unidad}</span>
-                    </p>
-                  </div>
-                  <Editar resumen={`Editar ${p.nombre}`}>
+                <Fila
+                  key={p.id}
+                  inactiva={!p.activo}
+                  editar={p.nombre}
+                  resumen={
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <p className={`font-semibold ${p.activo ? "text-arena-900" : "text-arena-500"}`}>{p.nombre}</p>
+                      <Estado activo={p.activo} />
+                      <p className="cifra ml-auto text-sm text-arena-700">
+                        {formatoPesos(p.costoUnitarioCentavos)} <span className="text-arena-400">/ {p.unidad}</span>
+                      </p>
+                    </div>
+                  }
+                >
                     <FormularioAccion accion={editarProducto} textoBoton="Guardar cambios" variante="secundario">
                       <input type="hidden" name="id" value={p.id} />
                       <CamposProducto prefijo={`p${p.id}`} categorias={nombresCategorias} producto={p} />
@@ -65,12 +97,14 @@ export default async function Productos() {
                       <input type="hidden" name="id" value={p.id} />
                       <input type="hidden" name="activo" value={String(!p.activo)} />
                     </FormularioAccion>
-                  </Editar>
                 </Fila>
               ))}
             </Filas>
           </div>
-        ))}
+          ))}
+          <PaginacionCatalogo ruta="/admin/productos" filtros={filtros} total={total} />
+          </>
+        }
       />
     </>
   );
@@ -79,7 +113,7 @@ export default async function Productos() {
 function CamposProducto({ prefijo, categorias, producto }: { prefijo: string; categorias: string[]; producto?: Producto }) {
   const id = (campo: string) => `${prefijo}-${campo}`;
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+    <div className="grid gap-4 sm:grid-cols-2">
       <Campo id={id("nombre")} etiqueta="Nombre">
         <input id={id("nombre")} name="nombre" required maxLength={80} defaultValue={producto?.nombre} className="campo" />
       </Campo>

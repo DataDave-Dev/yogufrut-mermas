@@ -1,16 +1,16 @@
-import { and, asc, eq, inArray, type SQL } from "drizzle-orm";
-import { Editar } from "@/components/Editar";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { Estado } from "@/components/Estado";
+import { FiltrosCatalogo, PaginacionCatalogo, SinCoincidencias } from "@/components/FiltrosCatalogo";
 import { FormularioAccion } from "@/components/FormularioAccion";
 import { Campo } from "@/components/ui/Campo";
 import { DisenoAdmin, Fila, Filas } from "@/components/ui/DisenoAdmin";
 import { EncabezadoPagina } from "@/components/ui/EncabezadoPagina";
-import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import { Insignia } from "@/components/ui/Insignia";
 import { db } from "@/db";
 import { sucursales, usuarios } from "@/db/schema";
 import { requireUsuario } from "@/lib/auth";
 import type { Rol } from "@/lib/auth-tipos";
+import { condicionCatalogo, leerFiltrosCatalogo, rangoPagina } from "@/lib/filtros-catalogo";
 import { PUESTOS } from "@/lib/formato";
 import { rolesAsignables } from "@/lib/permisos";
 import { cambiarEstadoUsuario, crearUsuario, editarUsuario, restablecerPassword } from "./actions";
@@ -19,16 +19,21 @@ export const metadata = { title: "Usuarios" };
 
 type Sucursal = { id: number; nombre: string; activa: boolean };
 
-export default async function Usuarios() {
+export default async function Usuarios({ searchParams }: PageProps<"/usuarios">) {
   const actor = await requireUsuario(["gerente", "admin"]);
+  const filtros = leerFiltrosCatalogo(await searchParams);
+  const { limite, desplazamiento } = rangoPagina(filtros.pagina);
   const roles = rolesAsignables(actor);
   const esAdmin = actor.rol === "admin";
 
   // El gerente solo ve (y gestiona) empleados y encargados de su sucursal.
-  const filtro: SQL | undefined = esAdmin
-    ? undefined
-    : and(eq(usuarios.sucursalId, actor.sucursalId!), inArray(usuarios.rol, [...roles]));
-  const [lista, listaSucursales] = await Promise.all([
+  const filtro = and(
+    esAdmin ? undefined : and(eq(usuarios.sucursalId, actor.sucursalId!), inArray(usuarios.rol, [...roles])),
+    condicionCatalogo(filtros, [usuarios.nombreCompleto, usuarios.usuario], usuarios.activo),
+    filtros.rol ? eq(usuarios.rol, filtros.rol) : undefined,
+    esAdmin && filtros.sucursal ? eq(usuarios.sucursalId, filtros.sucursal) : undefined,
+  );
+  const [lista, total, listaSucursales] = await Promise.all([
     db
       .select({
         id: usuarios.id,
@@ -42,7 +47,10 @@ export default async function Usuarios() {
       .from(usuarios)
       .leftJoin(sucursales, eq(sucursales.id, usuarios.sucursalId))
       .where(filtro)
-      .orderBy(asc(sucursales.nombre), asc(usuarios.nombreCompleto)),
+      .orderBy(asc(sucursales.nombre), asc(usuarios.nombreCompleto), asc(usuarios.id))
+      .limit(limite)
+      .offset(desplazamiento),
+    db.$count(usuarios, filtro),
     esAdmin
       ? db.select({ id: sucursales.id, nombre: sucursales.nombre, activa: sucursales.activa }).from(sucursales).orderBy(asc(sucursales.nombre))
       : Promise.resolve([] as Sucursal[]),
@@ -63,6 +71,7 @@ export default async function Usuarios() {
         tituloAlta="Nuevo usuario"
         alta={
           <FormularioAccion accion={crearUsuario} textoBoton="Crear usuario" reiniciar>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <Texto id="nuevo-nombre" etiqueta="Nombre completo" nombre="nombreCompleto" />
             <Texto id="nuevo-usuario" etiqueta="Usuario" nombre="usuario" autoCapitalize="none" ayuda="Para iniciar sesión, p. ej. «ana.lopez»" />
             <Texto id="nuevo-password" etiqueta="Contraseña inicial" nombre="password" tipo="password" minLength={8} ayuda="Mínimo 8 caracteres" />
@@ -74,31 +83,51 @@ export default async function Usuarios() {
                 ayuda="Para un administrador general déjala vacía"
               />
             )}
+            </div>
           </FormularioAccion>
         }
-        tituloLista={`${lista.length} ${lista.length === 1 ? "usuario" : "usuarios"}`}
+        tituloLista={`${total} ${total === 1 ? "usuario" : "usuarios"}`}
         lista={
-          lista.length === 0 ? (
-            <div className="px-5 pb-5">
-              <EstadoVacio titulo="Aún no hay usuarios" descripcion="Crea el primero con el formulario." icono="usuarios" />
-            </div>
-          ) : (
+          <>
+            <FiltrosCatalogo
+              ruta="/usuarios"
+              filtros={filtros}
+              marcador="Buscar por nombre o usuario…"
+              selectores={[
+                { nombre: "rol", etiqueta: "Filtrar por puesto", todos: "Todos los puestos", opciones: roles.map((r) => ({ id: r, nombre: PUESTOS[r] })) },
+                ...(esAdmin
+                  ? [{ nombre: "sucursal" as const, etiqueta: "Filtrar por sucursal", todos: "Todas las sucursales", opciones: listaSucursales }]
+                  : []),
+              ]}
+            />
+            {lista.length === 0 ? (
+              <SinCoincidencias />
+            ) : (
             <Filas>
               {lista.map((u) => {
                 const esYo = u.id === actor.id;
                 return (
-                  <Fila key={u.id} inactiva={!u.activo}>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <p className={`font-semibold ${u.activo ? "text-arena-900" : "text-arena-500"}`}>{u.nombreCompleto}</p>
-                      <Insignia tono={u.rol === "admin" ? "acento" : "neutro"}>{PUESTOS[u.rol]}</Insignia>
-                      <Estado activo={u.activo} />
-                      {esYo && <span className="text-xs text-arena-500">(tú)</span>}
-                    </div>
-                    <p className="mt-0.5 text-sm text-arena-500">
-                      {u.usuario}
-                      {u.sucursal && <> · {u.sucursal}</>}
-                    </p>
-                    <Editar resumen={`Editar ${u.usuario}`}>
+                  <Fila
+                    key={u.id}
+                    inactiva={!u.activo}
+                    editar={u.usuario}
+                    resumen={
+                      <div className="grid items-center gap-x-6 gap-y-1 md:grid-cols-[minmax(0,1.6fr)_13rem_minmax(0,1fr)]">
+                        <div className="min-w-0">
+                          <p className={`truncate font-semibold ${u.activo ? "text-arena-900" : "text-arena-500"}`}>
+                            {u.nombreCompleto}
+                            {esYo && <span className="ml-2 text-xs font-normal text-arena-500">(tú)</span>}
+                          </p>
+                          <p className="truncate text-sm text-arena-500">{u.usuario}</p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Insignia tono={u.rol === "admin" ? "acento" : "neutro"}>{PUESTOS[u.rol]}</Insignia>
+                          <Estado activo={u.activo} />
+                        </div>
+                        {esAdmin && <p className="truncate text-sm text-arena-600">{u.sucursal ?? "Todas las sucursales"}</p>}
+                      </div>
+                    }
+                  >
                       <FormularioAccion accion={editarUsuario} textoBoton="Guardar cambios" variante="secundario">
                         <input type="hidden" name="id" value={u.id} />
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -121,12 +150,13 @@ export default async function Usuarios() {
                           <input type="hidden" name="activo" value={String(!u.activo)} />
                         </FormularioAccion>
                       )}
-                    </Editar>
                   </Fila>
                 );
               })}
             </Filas>
-          )
+            )}
+            <PaginacionCatalogo ruta="/usuarios" filtros={filtros} total={total} />
+          </>
         }
       />
     </>

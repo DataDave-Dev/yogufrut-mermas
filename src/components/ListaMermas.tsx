@@ -16,8 +16,9 @@ type Props = {
   columnas?: boolean;
 };
 
-// Columnas en pantallas anchas: fecha · producto · motivo · registró · costo · flecha.
-const GRID_COLUMNAS = "lg:grid lg:grid-cols-[9.5rem_minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)_7rem_1rem] lg:gap-4";
+// Columnas en pantallas anchas: fecha · producto · cantidad · motivo · registró · costo · flecha.
+const GRID_COLUMNAS =
+  "lg:grid lg:grid-cols-[10.5rem_minmax(0,2fr)_6.5rem_minmax(0,1fr)_minmax(0,1fr)_7.5rem_1rem] lg:gap-6";
 
 export function ListaMermas({ mermas, mostrarUsuario = false, mostrarSucursal = false, vacio, compacta = false, columnas = false }: Props) {
   if (mermas.length === 0) return <EstadoVacio titulo={vacio} icono="lista" />;
@@ -28,6 +29,7 @@ export function ListaMermas({ mermas, mostrarUsuario = false, mostrarSucursal = 
         <div aria-hidden className={`hidden border-b border-arena-100 bg-arena-50 px-5 py-2.5 text-xs font-medium tracking-wide text-arena-500 uppercase ${GRID_COLUMNAS}`}>
           <span>Fecha</span>
           <span>Producto</span>
+          <span className="text-right">Cantidad</span>
           <span>Motivo</span>
           <span>{mostrarSucursal ? "Sucursal" : "Registró"}</span>
           <span className="text-right">Costo</span>
@@ -46,10 +48,14 @@ export function ListaMermas({ mermas, mostrarUsuario = false, mostrarSucursal = 
                     {formatoFecha(m.creadaEn)} <span className="text-arena-400">{formatoHora(m.creadaEn)}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 font-medium ${cancelada ? "text-arena-500" : "text-arena-900"}`}>
-                      <span className="truncate">
+                    <span
+                      className={`flex flex-wrap items-center gap-x-2 gap-y-1 font-medium lg:block lg:[&>*+*]:ml-2 lg:[&>svg]:inline ${cancelada ? "text-arena-500" : "text-arena-900"}`}
+                    >
+                      {/* En celular la cantidad va junto al producto; en pantallas anchas tiene su columna. */}
+                      <span className="lg:hidden">
                         {m.producto} · {formatoCantidad(m.cantidadMilesimas)} {m.unidad}
                       </span>
+                      <span className="hidden lg:inline">{m.producto}</span>
                       {cancelada && <Insignia tono="peligro">Cancelado</Insignia>}
                       {m.tieneFoto && <Icono nombre="camara" className="size-4 text-arena-400" titulo="Con foto" />}
                     </span>
@@ -57,6 +63,9 @@ export function ListaMermas({ mermas, mostrarUsuario = false, mostrarSucursal = 
                     <span className="mt-0.5 block truncate text-sm text-arena-500 lg:hidden">
                       {[m.motivo, `${formatoFecha(m.creadaEn)} ${formatoHora(m.creadaEn)}`, mostrarUsuario && m.usuario].filter(Boolean).join(" · ")}
                     </span>
+                  </span>
+                  <span className={`cifra hidden text-right lg:block ${cancelada ? "text-arena-400" : "text-arena-800"}`}>
+                    {formatoCantidad(m.cantidadMilesimas)} <span className="text-sm text-arena-400">{m.unidad}</span>
                   </span>
                   <span className="hidden truncate text-sm text-arena-700 lg:block">{m.motivo}</span>
                   <span className="hidden truncate text-sm text-arena-700 lg:block">{mostrarSucursal ? m.sucursal : m.usuario}</span>

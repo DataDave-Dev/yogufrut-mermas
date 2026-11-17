@@ -19,9 +19,10 @@ async function abrirMenuSiHaceFalta(page: Page) {
 /** Navega con el menú lateral. */
 export async function navegar(page: Page, texto: string) {
   await abrirMenuSiHaceFalta(page);
-  const enlace = page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: texto, exact: true });
-  await enlace.click();
-  await expect(enlace).toHaveAttribute("aria-current", "page");
+  const menu = page.getByRole("navigation", { name: "Principal" });
+  await menu.getByRole("link", { name: texto, exact: true }).click();
+  // En celular el cajón se cierra al navegar: el enlace queda oculto, así que se comprueba por atributo, sin exigir que sea visible.
+  await expect(page.locator('nav a[aria-current="page"]').filter({ hasText: texto })).toHaveCount(1);
 }
 
 export async function salir(page: Page) {

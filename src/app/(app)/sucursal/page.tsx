@@ -77,10 +77,10 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
   ]);
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[19rem_minmax(0,1fr)]">
+    <div className="flex flex-col gap-5">
       <form
         aria-label="Filtros"
-        className="grid gap-4 rounded-2xl bg-white p-5 shadow-suave ring-1 ring-arena-200/70 sm:grid-cols-2 lg:grid-cols-3 xl:sticky xl:top-8 xl:grid-cols-1"
+        className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl bg-white p-4 shadow-suave ring-1 ring-arena-200/70 md:grid-cols-3 xl:grid-cols-6"
       >
         {filtros.sucursal && <input type="hidden" name="sucursal" value={filtros.sucursal} />}
         <Fecha etiqueta="Desde" nombre="desde" valor={filtros.desde} />
@@ -89,11 +89,11 @@ async function Resultados({ sucursalId, filtros }: { sucursalId: number; filtros
         <Selector etiqueta="Producto" nombre="producto" valor={filtros.producto} opciones={opcionesProductos} />
         <Selector etiqueta="Motivo" nombre="motivo" valor={filtros.motivo} opciones={opcionesMotivos} />
         <Selector etiqueta="Registró" nombre="usuario" valor={filtros.usuario} opciones={opcionesUsuarios} />
-        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-          <button className={estiloBoton()}>
+        <div className="col-span-full flex items-center justify-end gap-2">
+          <button className={estiloBoton({ tamano: "sm" })}>
             <Icono nombre="filtro" className="size-4" /> Filtrar
           </button>
-          <Link href={`/sucursal${aQuery({ sucursal: filtros.sucursal })}`} className={estiloBoton({ variante: "fantasma" })}>
+          <Link href={`/sucursal${aQuery({ sucursal: filtros.sucursal })}`} className={estiloBoton({ variante: "fantasma", tamano: "sm" })}>
             Limpiar filtros
           </Link>
         </div>
@@ -146,7 +146,7 @@ function SelectorSucursal({ sucursales, actual }: { sucursales: Opcion[]; actual
 function Fecha({ etiqueta, nombre, valor }: { etiqueta: string; nombre: string; valor?: string }) {
   return (
     <Campo id={`filtro-${nombre}`} etiqueta={etiqueta}>
-      <input id={`filtro-${nombre}`} type="date" name={nombre} defaultValue={valor} className="campo" />
+      <input id={`filtro-${nombre}`} type="date" name={nombre} defaultValue={valor} className="campo px-3 py-2 text-sm" />
     </Campo>
   );
 }
@@ -162,7 +162,7 @@ type SelectorProps = {
 function Selector({ etiqueta, nombre, valor, opciones, vacio = "Todos" }: SelectorProps) {
   return (
     <Campo id={`filtro-${nombre}`} etiqueta={etiqueta}>
-      <select id={`filtro-${nombre}`} name={nombre} defaultValue={valor ?? ""} className="campo">
+      <select id={`filtro-${nombre}`} name={nombre} defaultValue={valor ?? ""} className="campo px-3 py-2 text-sm">
         {vacio !== null && <option value="">{vacio}</option>}
         {opciones.map((o) => (
           <option key={o.id} value={o.id}>

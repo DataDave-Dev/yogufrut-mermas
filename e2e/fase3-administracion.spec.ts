@@ -3,6 +3,7 @@ import { PASSWORD, entrar, filas, llenarMerma, navegar, salir } from "./utilidad
 
 async function crearUsuario(page: Page, datos: { nombre: string; usuario: string; password: string; puesto: string; sucursal?: string }) {
   const formulario = page.locator("form").filter({ has: page.getByRole("button", { name: "Crear usuario" }) });
+  await abrirAlta(page, "Nuevo usuario");
   await formulario.getByLabel("Nombre completo").fill(datos.nombre);
   await formulario.getByLabel("Usuario").fill(datos.usuario);
   await formulario.getByLabel("Contraseña inicial").fill(datos.password);
@@ -10,6 +11,12 @@ async function crearUsuario(page: Page, datos: { nombre: string; usuario: string
   if (datos.sucursal) await formulario.getByLabel("Sucursal").selectOption({ label: datos.sucursal });
   await formulario.getByRole("button", { name: "Crear usuario" }).click();
   await expect(formulario.getByRole("status")).toContainText(`Usuario «${datos.usuario}» creado`);
+}
+
+/** El formulario de alta está plegado: se abre con el botón del encabezado (si no lo está ya). */
+async function abrirAlta(page: Page, titulo: string) {
+  const boton = page.getByRole("main").locator("summary", { hasText: titulo });
+  if (!(await boton.locator("xpath=..").evaluate((d) => (d as HTMLDetailsElement).open))) await boton.click();
 }
 
 function fila(page: Page, texto: string) {
@@ -27,6 +34,7 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
   await entrar(page, "admin");
   await expect(page.getByRole("heading", { name: /Buen(os|as) .*, Administrador/ })).toBeVisible();
   await navegar(page, "Sucursales");
+  await abrirAlta(page, "Nueva sucursal");
   await page.getByLabel("Nombre", { exact: true }).first().fill(sucursal);
   await page.getByRole("button", { name: "Crear sucursal" }).click();
   await expect(fila(page, sucursal)).toBeVisible();
@@ -37,6 +45,7 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
 
   await navegar(page, "Productos");
   const nuevoProducto = page.locator("form").filter({ has: page.getByRole("button", { name: "Crear producto" }) });
+  await abrirAlta(page, "Nuevo producto");
   await nuevoProducto.getByLabel("Nombre").fill(producto);
   await nuevoProducto.getByLabel("Categoría").fill("Pruebas");
   await nuevoProducto.getByLabel("Unidad").selectOption("pz");
@@ -80,6 +89,10 @@ test("alta de sucursal y personal, registro, cambio de costo y desactivación", 
   // Administrador: el nuevo costo no cambia la merma ya registrada.
   await entrar(page, "admin");
   await navegar(page, "Productos");
+  // El catálogo está paginado: se llega al producto buscándolo.
+  await page.getByLabel("Buscar").fill(producto);
+  await page.getByRole("button", { name: "Filtrar" }).click();
+  await expect(page).toHaveURL(/q=/);
   const filaProducto = fila(page, producto);
   await filaProducto.getByText(`Editar ${producto}`).click();
   await filaProducto.getByLabel("Costo unitario (MXN)").fill("20.00");
