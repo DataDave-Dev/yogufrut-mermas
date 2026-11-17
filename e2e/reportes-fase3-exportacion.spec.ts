@@ -24,7 +24,7 @@ test("gerente descarga el Excel del mes y abre la vista imprimible", async ({ pa
   expect(productos).toContain(producto);
 
   // El botón de PDF abre la vista imprimible en otra pestaña con impresión automática.
-  const imprimir = page.getByRole("link", { name: "Imprimir / PDF" });
+  const imprimir = page.getByRole("link", { name: "Exportar PDF" });
   await expect(imprimir).toHaveAttribute("target", "_blank");
   await expect(imprimir).toHaveAttribute("href", /imprimir=1/);
 

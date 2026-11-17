@@ -11,7 +11,9 @@ import { db } from "@/db";
 import { sucursales } from "@/db/schema";
 import { requireUsuario } from "@/lib/auth";
 import { formatoCantidad, formatoPesos, PUESTOS } from "@/lib/formato";
-import { desplazar, etiquetaPeriodo, fechasDelPeriodo, leerPeriodo, variacion } from "@/lib/periodos";
+import { desplazar, etiquetaPeriodo, fechasDelPeriodo, hoyLocal, leerPeriodo, variacion } from "@/lib/periodos";
+import { Barras } from "@/components/Barras";
+import { barrasDiaSemana, barrasHora, porcentaje } from "@/lib/analisis";
 import { GraficaDias } from "@/components/GraficaDias";
 import { obtenerReporte } from "@/lib/reportes";
 import { condicionHistorial, totalesMermas } from "@/lib/consultas-mermas";
@@ -45,6 +47,9 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
     totalesMermas(condicionHistorial({ sucursalId: sucursal.id, desde: anteriorPeriodo.desde, hasta: anteriorPeriodo.hasta, estado: "activos" })),
   ]);
   const nombreAnterior = { dia: "día anterior", semana: "semana anterior", mes: "mes anterior" }[periodo.tipo];
+  // Promedio sobre los días ya transcurridos del periodo (no sobre el mes completo si va a la mitad).
+  const fechas = fechasDelPeriodo(periodo);
+  const diasTranscurridos = Math.max(1, fechas.filter((f) => f <= hoyLocal()).length);
   const historial = (filtros: Parameters<typeof rutaHistorial>[1]) => rutaHistorial(periodo, { ...filtros, sucursal: idEnUrl });
 
   return (
@@ -73,7 +78,7 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
                 rel="noopener"
                 className={estiloBoton({ variante: "secundario" })}
               >
-                <Icono nombre="imprimir" className="size-4" /> Imprimir / PDF
+                <Icono nombre="imprimir" className="size-4" /> Exportar PDF
               </Link>
             </>
           )
@@ -82,7 +87,7 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
 
       <SelectorPeriodo periodo={periodo} href={(tipo, fecha) => rutaReporte(tipo, fecha, idEnUrl)} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Indicador
           etiqueta={`Costo de mermas · ${etiquetaPeriodo(periodo)}`}
           valor={formatoPesos(r.costoCentavos)}
@@ -96,6 +101,20 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
           valor={r.registros ? formatoPesos(Math.round(r.costoCentavos / r.registros)) : "—"}
           icono="reportes"
         />
+        {periodo.tipo !== "dia" && (
+          <Indicador
+            etiqueta="Promedio por día"
+            valor={formatoPesos(Math.round(r.costoCentavos / diasTranscurridos))}
+            detalle={`${(r.registros / diasTranscurridos).toFixed(1)} registros por día`}
+            icono="historial"
+          />
+        )}
+        <Indicador
+          etiqueta="Registros cancelados"
+          valor={String(r.cancelados.registros)}
+          detalle={`${formatoPesos(r.cancelados.costoCentavos)} · ${porcentaje(r.cancelados.registros, r.registros + r.cancelados.registros)} del total`}
+          icono="cerrar"
+        />
         <Indicador
           etiqueta="Producto con más merma"
           valor={r.productos[0]?.nombre ?? "—"}
@@ -108,7 +127,7 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
       {r.registros === 0 ? (
         <EstadoVacio titulo="No hay registros en este periodo." descripcion="Prueba con otro periodo o revisa el historial." icono="reportes" />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
           <Ranking
             titulo="Productos con más merma"
             vacio="—"
@@ -145,11 +164,26 @@ export default async function Reportes({ searchParams }: PageProps<"/reportes">)
               href: historial({ usuario: e.id }),
             }))}
           />
+          <Ranking
+            titulo="Costo por categoría"
+            vacio="—"
+            filas={r.categorias.map((c) => ({
+              clave: c.nombre,
+              nombre: c.nombre,
+              valor: c.costoCentavos,
+              textoValor: formatoPesos(c.costoCentavos),
+              detalle: `${veces(c.registros)} · ${porcentaje(c.costoCentavos, r.costoCentavos)} del costo`,
+            }))}
+          />
+          {periodo.tipo !== "dia" && (
+            <Barras titulo="Costo por día de la semana" descripcion="Qué días se pierde más" barras={barrasDiaSemana(r.diasSemana)} />
+          )}
+          <Barras titulo="Costo por hora del día" descripcion="A qué hora se registran las mermas" barras={barrasHora(r.horas)} />
         </div>
       )}
       {r.registros > 0 && periodo.tipo !== "dia" && (
         <GraficaDias
-          fechas={fechasDelPeriodo(periodo)}
+          fechas={fechas}
           dias={r.dias}
           href={(fecha) => `/sucursal?${new URLSearchParams({ ...(idEnUrl ? { sucursal: String(idEnUrl) } : {}), desde: fecha, hasta: fecha })}`}
         />

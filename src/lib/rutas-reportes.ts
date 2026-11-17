@@ -18,5 +18,7 @@ export const rutaHistorial = (periodo: Periodo, filtros: Partial<FiltrosHistoria
 
 export const rutaExcel = (tipo: TipoPeriodo, fecha: string, sucursal?: number) => `/reportes/excel${query({ tipo, fecha, sucursal })}`;
 
+export const rutaImprimirGeneral = (tipo: TipoPeriodo, fecha: string) => `/reportes/general/imprimir${query({ tipo, fecha, imprimir: 1 })}`;
+
 export const rutaImprimir = (tipo: TipoPeriodo, fecha: string, sucursal?: number) =>
   `/reportes/imprimir${query({ tipo, fecha, sucursal, imprimir: 1 })}`;

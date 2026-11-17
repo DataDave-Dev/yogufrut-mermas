@@ -39,6 +39,8 @@ export type DatosExportacion = {
   productos: { nombre: string; unidad: string; registros: number; cantidadMilesimas: number; costoCentavos: number }[];
   motivos: { nombre: string; registros: number; costoCentavos: number }[];
   empleados: { nombre: string; rol: Rol; registros: number; costoCentavos: number }[];
+  /** Solo para la vista imprimible; el Excel no la usa. */
+  categorias?: { nombre: string; registros: number; costoCentavos: number }[];
 };
 
 const MONEDA = '"$"#,##0.00';

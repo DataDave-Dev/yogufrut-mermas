@@ -77,6 +77,28 @@ describe("obtenerReporte", () => {
     expect(r.dias.map((d) => [d.fecha, d.registros])).toEqual([["2026-11-03", 1], ["2026-11-10", 1], ["2026-11-11", 1]]);
   });
 
+  test("categorías por costo", async () => {
+    const r = await obtenerReporte(1, noviembre);
+    expect(r.categorias.map((c) => [c.nombre, c.registros, c.costoCentavos])).toEqual([["Fruta", 2, 21000], ["Lácteos", 1, 11200]]);
+  });
+
+  test("día de la semana y hora en hora de Monterrey", async () => {
+    const r = await obtenerReporte(1, noviembre);
+    // 3 y 10 de noviembre de 2026 son martes (2); las 05:30 UTC del 12 son las 23:30 del miércoles 11 (3).
+    expect(r.diasSemana.map((d) => [d.diaSemana, d.registros]).sort()).toEqual([[2, 2], [3, 1]]);
+    expect(r.horas.map((h) => [h.hora, h.registros])).toEqual([[9, 1], [10, 1], [23, 1]]);
+  });
+
+  test("cancelados se cuentan aparte", async () => {
+    const r = await obtenerReporte(1, noviembre);
+    expect(r.cancelados).toEqual({ registros: 1, costoCentavos: 25200 });
+  });
+
+  test("sin sucursal abarca todas", async () => {
+    const r = await obtenerReporte(undefined, noviembre);
+    expect([r.registros, r.costoCentavos]).toEqual([4, 35000]);
+  });
+
   test("periodo sin registros", async () => {
     const r = await obtenerReporte(1, crearPeriodo("dia", "2026-11-20"));
     expect(r).toMatchObject({ registros: 0, costoCentavos: 0, productos: [], dias: [] });

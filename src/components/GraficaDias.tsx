@@ -8,17 +8,19 @@ type Props = {
   /** Todos los días del periodo (AAAA-MM-DD), incluidos los que no tienen mermas. */
   fechas: string[];
   dias: Dia[];
-  href: (fecha: string) => string;
+  /** Enlace de cada barra (p. ej. al historial de ese día). Sin él, las barras no son enlaces. */
+  href?: (fecha: string) => string;
+  descripcion?: string;
 };
 
 /** Barras verticales por día (CSS puro). Cada barra lleva al historial de ese día. */
-export function GraficaDias({ fechas, dias, href }: Props) {
+export function GraficaDias({ fechas, dias, href, descripcion = href ? "Toca un día para ver sus registros" : undefined }: Props) {
   const porFecha = new Map(dias.map((d) => [d.fecha, d]));
   const maximo = Math.max(1, ...dias.map((d) => d.costoCentavos));
   const etiquetaCada = fechas.length > 16 ? 5 : 1;
 
   return (
-    <Tarjeta titulo="Costo por día" descripcion="Toca un día para ver sus registros">
+    <Tarjeta titulo="Costo por día" descripcion={descripcion}>
       <ol className="flex h-44 items-end gap-1 sm:gap-1.5">
         {fechas.map((fecha, i) => {
           const d = porFecha.get(fecha);
@@ -28,7 +30,9 @@ export function GraficaDias({ fechas, dias, href }: Props) {
             : `${fecha.split("-").reverse().join("/")}: sin registros`;
           return (
             <li key={fecha} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5">
-              {d ? (
+              {d && !href ? (
+                <span title={texto} role="img" aria-label={texto} className="w-full rounded-t-md bg-frambuesa-400" style={{ height: `${Math.max(6, (d.costoCentavos / maximo) * 100)}%` }} />
+              ) : d && href ? (
                 <Link
                   href={href(fecha)}
                   title={texto}

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Barras } from "@/components/Barras";
+import { GraficaDias } from "@/components/GraficaDias";
 import { ListaMermas } from "@/components/ListaMermas";
 import { Ranking } from "@/components/Ranking";
 import { estiloBoton } from "@/components/ui/boton";
@@ -8,8 +10,9 @@ import { Indicador } from "@/components/ui/Indicador";
 import { Tarjeta } from "@/components/ui/Tarjeta";
 import { requireUsuario, type UsuarioSesion } from "@/lib/auth";
 import { condicionHistorial, listarMermas, totalesMermas } from "@/lib/consultas-mermas";
+import { barrasDiaSemana, porcentaje } from "@/lib/analisis";
 import { formatoPesos } from "@/lib/formato";
-import { crearPeriodo, desplazar, etiquetaPeriodo, fechaLarga, hoyLocal, saludo, variacion } from "@/lib/periodos";
+import { crearPeriodo, desplazar, etiquetaPeriodo, fechaLarga, fechasDelPeriodo, hoyLocal, saludo, variacion } from "@/lib/periodos";
 import { obtenerReporte, obtenerResumenGeneral } from "@/lib/reportes";
 import { rutaReporte } from "@/lib/rutas-reportes";
 
@@ -116,6 +119,14 @@ async function InicioSucursal({ usuario, hoy, mesActual }: { usuario: UsuarioSes
         />
       </div>
 
+      {mes.registros > 0 && (
+        <GraficaDias
+          fechas={fechasDelPeriodo(mesActual)}
+          dias={mes.dias}
+          href={(fecha) => `/sucursal?${new URLSearchParams({ desde: fecha, hasta: fecha })}`}
+        />
+      )}
+
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="flex flex-col gap-4 lg:col-span-2">
           <Ranking
@@ -151,14 +162,45 @@ async function InicioSucursal({ usuario, hoy, mesActual }: { usuario: UsuarioSes
           <ListaMermas mermas={recientes.filas.slice(0, RECIENTES + 2)} mostrarUsuario vacio="La sucursal aún no tiene registros." compacta />
         </Tarjeta>
       </div>
+
+      {mes.registros > 0 && (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <Ranking
+            titulo="Costo por categoría"
+            descripcion="Este mes"
+            vacio="Sin registros este mes."
+            filas={mes.categorias.slice(0, 5).map((c) => ({
+              clave: c.nombre,
+              nombre: c.nombre,
+              valor: c.costoCentavos,
+              textoValor: formatoPesos(c.costoCentavos),
+              detalle: `${porcentaje(c.costoCentavos, mes.costoCentavos)} del costo`,
+            }))}
+          />
+          <Ranking
+            titulo="Quién registra"
+            descripcion="Este mes, por costo"
+            vacio="Sin registros este mes."
+            filas={mes.empleados.slice(0, 5).map((e) => ({
+              clave: e.id,
+              nombre: e.nombre,
+              valor: e.costoCentavos,
+              textoValor: formatoPesos(e.costoCentavos),
+              detalle: veces(e.registros),
+            }))}
+          />
+          <Barras titulo="Costo por día de la semana" descripcion="Este mes" barras={barrasDiaSemana(mes.diasSemana)} className="md:col-span-2 xl:col-span-1" />
+        </div>
+      )}
     </>
   );
 }
 
 async function InicioAdmin({ mesActual }: { mesActual: Periodo }) {
-  const [resumen, anterior, recientes] = await Promise.all([
+  const [resumen, anterior, global, recientes] = await Promise.all([
     obtenerResumenGeneral(mesActual),
     obtenerResumenGeneral(desplazar(mesActual, -1)),
+    obtenerReporte(undefined, mesActual, 5),
     listarMermas(condicionHistorial({ estado: "todos" }), 1),
   ]);
   const conMermas = resumen.sucursales.filter((s) => s.registros > 0);
@@ -187,6 +229,8 @@ async function InicioAdmin({ mesActual }: { mesActual: Periodo }) {
           compacto
         />
       </div>
+      {global.registros > 0 && <GraficaDias fechas={fechasDelPeriodo(mesActual)} dias={global.dias} descripcion="Todas las sucursales, este mes" />}
+
       <div className="grid gap-4 lg:grid-cols-5">
         <Ranking
           className="lg:col-span-2"
@@ -207,6 +251,46 @@ async function InicioAdmin({ mesActual }: { mesActual: Periodo }) {
           <ListaMermas mermas={recientes.filas.slice(0, RECIENTES + 2)} mostrarUsuario mostrarSucursal vacio="Aún no hay registros." compacta />
         </Tarjeta>
       </div>
+
+      {global.registros > 0 && (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Ranking
+            titulo="Productos con más merma"
+            descripcion="Este mes, por costo"
+            vacio="—"
+            filas={global.productos.map((p) => ({
+              clave: `${p.id}-${p.unidad}`,
+              nombre: p.nombre,
+              valor: p.costoCentavos,
+              textoValor: formatoPesos(p.costoCentavos),
+              detalle: veces(p.registros),
+            }))}
+          />
+          <Ranking
+            titulo="Motivos frecuentes"
+            vacio="—"
+            filas={global.motivos.slice(0, 5).map((m) => ({
+              clave: m.id,
+              nombre: m.nombre,
+              valor: m.registros,
+              textoValor: veces(m.registros),
+              detalle: formatoPesos(m.costoCentavos),
+            }))}
+          />
+          <Ranking
+            titulo="Costo por categoría"
+            vacio="—"
+            filas={global.categorias.slice(0, 5).map((c) => ({
+              clave: c.nombre,
+              nombre: c.nombre,
+              valor: c.costoCentavos,
+              textoValor: formatoPesos(c.costoCentavos),
+              detalle: `${porcentaje(c.costoCentavos, global.costoCentavos)} del costo`,
+            }))}
+          />
+          <Barras titulo="Costo por día de la semana" descripcion="Este mes" barras={barrasDiaSemana(global.diasSemana)} />
+        </div>
+      )}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq, gte, isNull, lt, sql, sum, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNotNull, isNull, lt, sql, sum, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { mermas, motivos, productos, sucursales, usuarios } from "@/db/schema";
 import { condicionHistorial, listarMermas } from "./consultas-mermas";
@@ -11,25 +11,31 @@ const LIMITE_RANKING = 10;
 const costo = sum(mermas.costoTotalCentavos).mapWith(Number);
 const registros = count();
 
-/** Mermas no canceladas de una sucursal en el periodo. */
-function condicionPeriodo(periodo: Periodo, sucursalId?: number): SQL {
+/** Mermas de una sucursal (o de todas) en el periodo: las vigentes o, si se pide, solo las canceladas. */
+function condicionPeriodo(periodo: Periodo, sucursalId?: number, canceladas = false): SQL {
   return and(
     sucursalId ? eq(mermas.sucursalId, sucursalId) : undefined,
     gte(mermas.creadaEn, new Date(periodo.desde)),
     lt(mermas.creadaEn, new Date(periodo.hasta)),
-    isNull(mermas.canceladaEn),
+    canceladas ? isNotNull(mermas.canceladaEn) : isNull(mermas.canceladaEn),
   )!;
 }
 
-/** Datos del panel de una sucursal: totales, rankings y desglose por día. Excluye cancelados. */
-export async function obtenerReporte(sucursalId: number, periodo: Periodo, limite = LIMITE_RANKING) {
+/**
+ * Datos del panel: totales, rankings y desgloses por día, día de la semana y hora. Excluye cancelados
+ * (que se cuentan aparte). Sin sucursal, abarca todas (solo para el administrador).
+ */
+export async function obtenerReporte(sucursalId: number | undefined, periodo: Periodo, limite = LIMITE_RANKING) {
   const donde = condicionPeriodo(periodo, sucursalId);
   // ponytail: desfase fijo del inicio del periodo; un cambio de horario a mitad del periodo movería
   // una hora el día del cambio (Monterrey no tiene horario de verano desde 2022).
   const desfase = desfaseMs(periodo.desde);
-  const dia = sql<string>`strftime('%Y-%m-%d', (${mermas.creadaEn} + ${desfase}) / 1000, 'unixepoch')`;
+  const local = (formato: string) => sql<string>`strftime(${formato}, (${mermas.creadaEn} + ${desfase}) / 1000, 'unixepoch')`;
+  const dia = local("%Y-%m-%d");
+  const diaSemana = local("%w").mapWith(Number); // 0 = domingo
+  const hora = local("%H").mapWith(Number);
 
-  const [totales, porProducto, porMotivo, porEmpleado, porDia] = await Promise.all([
+  const [totales, porProducto, porMotivo, porEmpleado, porDia, porCategoria, porDiaSemana, porHora, cancelados] = await Promise.all([
     db.select({ registros, costoCentavos: costo }).from(mermas).where(donde),
     db
       .select({
@@ -62,6 +68,16 @@ export async function obtenerReporte(sucursalId: number, periodo: Periodo, limit
       .groupBy(usuarios.id)
       .orderBy(desc(costo), asc(usuarios.nombreCompleto)),
     db.select({ fecha: dia, registros, costoCentavos: costo }).from(mermas).where(donde).groupBy(dia).orderBy(asc(dia)),
+    db
+      .select({ nombre: productos.categoria, registros, costoCentavos: costo })
+      .from(mermas)
+      .innerJoin(productos, eq(productos.id, mermas.productoId))
+      .where(donde)
+      .groupBy(productos.categoria)
+      .orderBy(desc(costo), asc(productos.categoria)),
+    db.select({ diaSemana, registros, costoCentavos: costo }).from(mermas).where(donde).groupBy(diaSemana),
+    db.select({ hora, registros, costoCentavos: costo }).from(mermas).where(donde).groupBy(hora).orderBy(asc(hora)),
+    db.select({ registros, costoCentavos: costo }).from(mermas).where(condicionPeriodo(periodo, sucursalId, true)),
   ]);
 
   return {
@@ -71,6 +87,10 @@ export async function obtenerReporte(sucursalId: number, periodo: Periodo, limit
     motivos: porMotivo,
     empleados: porEmpleado,
     dias: porDia,
+    categorias: porCategoria,
+    diasSemana: porDiaSemana,
+    horas: porHora,
+    cancelados: { registros: cancelados[0]?.registros ?? 0, costoCentavos: cancelados[0]?.costoCentavos ?? 0 },
   };
 }
 
@@ -126,5 +146,6 @@ export async function obtenerExportacion(sucursalId: number, periodo: Periodo): 
     productos: reporte.productos,
     motivos: reporte.motivos,
     empleados: reporte.empleados,
+    categorias: reporte.categorias,
   };
 }
