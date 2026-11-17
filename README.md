@@ -14,8 +14,12 @@ pnpm install
 cp .env.example .env
 pnpm db:migrate               # crea las tablas
 pnpm db:seed                  # catálogos, Sucursal Sendero, usuarios de prueba y modo WAL (idempotente)
+pnpm db:demo                  # opcional: 9 sucursales más, su personal y 60 días de mermas (solo desarrollo)
 pnpm dev                      # http://localhost:3001
 ```
+
+Corre `db:seed` y `db:demo` con `pnpm dev` detenido (o reinícialo después): al terminar borran los archivos
+`-wal`/`-shm` de SQLite y un servidor encendido deja de poder escribir.
 
 Usuarios de prueba (contraseña = `SEED_PASSWORD` del `.env`): `empleado`, `encargado`, `gerente` (Sucursal Sendero) y `admin`.
 
